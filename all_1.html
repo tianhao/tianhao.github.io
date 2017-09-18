@@ -759,21 +759,339 @@ public class SpringbootinitApplicationTests {
 	<article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
 		<div class="meta">
 			<div class="date">
-				<time datetime="2016-10-22T15:56:32+08:00" itemprop="datePublished">2016/10/22</time>
+				<time datetime="2016-10-04T02:32:40+08:00" itemprop="datePublished">2016/10/4</time>
 			</div>
 			<div class="tags">posted in 
 			
-			    <a class='category' href='Life.html'>Life</a>&nbsp;
+			    <a class='category' href='Spring.html'>Spring</a>&nbsp;
 			 
 			</div>
 		</div>
-		<h1 class="title" itemprop="name"><a href="14798013920202.html" itemprop="url">
-		Hello OpenShift</a></h1>
+		<h1 class="title" itemprop="name"><a href="14755195602368.html" itemprop="url">
+		Spring消息(2) AMQP</a></h1>
 		<div class="entry-content" itemprop="articleBody">
 			
-			<p>感谢 RedHat 提供的免费 OpenShift，今天把博客搬到了 OpenShift Online 了。</p>
+			<p><em>——《Spring实战》笔记 第17章</em></p>
 
-<p>OpenShift 免费版可以有3个应用，每个应用1G存储，可以指定站点域名，如果国内不做域名加速的话还是有点慢，不过加速后就很快了。</p>
+<h2 id="toc_0">安装 RabbitMQ</h2>
+
+<pre><code>brew install rabbitmq
+rabbitmq-server
+brew services start rabbitmq
+</code></pre>
+
+<p>WEB管理页面 <a href="http://localhost:15672">http://localhost:15672</a>  用户名/密码: guest/guest</p>
+
+<h2 id="toc_1">基本配置</h2>
+
+<pre><code class="language-XML">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans:beans xmlns=&quot;http://www.springframework.org/schema/rabbit&quot;
+             xmlns:beans=&quot;http://www.springframework.org/schema/beans&quot;
+             xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+             xsi:schemaLocation=&quot;http://www.springframework.org/schema/rabbit
+             http://www.springframework.org/schema/rabbit/spring-rabbit.xsd
+             http://www.springframework.org/schema/beans
+             http://www.springframework.org/schema/beans/spring-beans.xsd&quot;&gt;
+
+    &lt;!--========= 连接工厂配置.开始 =========--&gt;
+    &lt;!-- 最简配置,全部使用默认值 --&gt;
+    &lt;connection-factory id=&quot;connectionFactory&quot; /&gt;
+    &lt;!-- or --&gt;
+    &lt;!-- 完全配置 --&gt;
+    &lt;connection-factory id=&quot;connectionFactory&quot;
+                        host=&quot;${rabbitmq.host}&quot;
+                        port=&quot;${rabbitmq.port}&quot;
+                        username=&quot;${rabbitmq.username}&quot;
+                        password=&quot;${rabbitmq.password}&quot; /&gt;
+    &lt;!--========= 连接工厂配置.结束 =========--&gt;
+
+
+    &lt;!-- admin --&gt;
+    &lt;admin connection-factory=&quot;connectionFactory&quot;/&gt;
+
+    &lt;!--========= 消息配置.开始 =========--&gt;
+    &lt;!-- 单队列配置--&gt;
+    &lt;queue id=&quot;spittleAlertQueue&quot; name=&quot;spittle.alerts&quot; /&gt;
+    &lt;fanout-exchange name=&quot;spittle.alert.exchange&quot;&gt;
+        &lt;bindings&gt;
+            &lt;binding queue=&quot;spittle.alerts&quot; /&gt;
+        &lt;/bindings&gt;
+    &lt;/fanout-exchange&gt;
+
+    &lt;!-- or --&gt;
+    
+    &lt;!-- 复合配置 --&gt;
+    &lt;queue name=&quot;spittle.alert.queue.1&quot; /&gt;
+    &lt;queue name=&quot;spittle.alert.queue.2&quot; /&gt;
+    &lt;queue name=&quot;spittle.alert.queue.3&quot; /&gt;
+    &lt;fanout-exchange name=&quot;spittle.fanout&quot;&gt;
+        &lt;bindings&gt;
+            &lt;binding queue=&quot;spittle.alert.queue.1&quot; /&gt;
+            &lt;binding queue=&quot;spittle.alert.queue.2&quot; /&gt;
+            &lt;binding queue=&quot;spittle.alert.queue.3&quot; /&gt;
+        &lt;/bindings&gt;
+    &lt;/fanout-exchange&gt;
+    &lt;!--========= 消息配置.结束 =========--&gt;
+
+&lt;/beans:beans&gt;
+</code></pre>
+
+<h2 id="toc_2">生产者 和 消费者</h2>
+
+<p>注意 RabbitTemplate 的 convertAndSend() 、send()、receive()、receiveAndConvert()都不会堵塞。所以跟 JMS 不一样。。。</p>
+
+<h3 id="toc_3">生产者 API, convertAndSend() 和 send()</h3>
+
+<p>convertAndSend() 的几个重载方法：</p>
+
+<pre><code class="language-JAVA">    // 发送给默认 exchange 的默认 routing-key
+    public void convertAndSend(Object object) throws AmqpException;
+
+    // 发送给默认 exchange 的指定 routing-key
+    public void convertAndSend(String routingKey, final Object object) throws AmqpException;
+
+    // 发送给指定 exchange 的指定 routing-key
+    public void convertAndSend(String exchange, String routingKey, final Object object) throws AmqpException;
+
+    // 发送给默认 exchange 的默认 routing-key，发送前用messagePostProcessor处理消息
+    public void convertAndSend(Object message, MessagePostProcessor messagePostProcessor) throws AmqpException;
+
+    // 发送给默认 exchange 的指定 routing-key，发送前用messagePostProcessor处理消息
+    public void convertAndSend(String routingKey, Object message, MessagePostProcessor messagePostProcessor)
+            throws AmqpException;
+            
+    // 发送给指定 exchange 的指定 routing-key，发送前用messagePostProcessor处理消息
+    public void convertAndSend(String exchange, String routingKey, final Object message,
+            final MessagePostProcessor messagePostProcessor) throws AmqpException;
+</code></pre>
+
+<p>其实 RabbitTemplate 也有 send()方法，只是调用这些方法前要先将对象转换为 Message 类型，所以一般不用他们：</p>
+
+<pre><code class="language-JAVA">    void send(Message message) throws AmqpException;
+    void send(String routingKey, Message message) throws AmqpException;
+    void send(String exchange, String routingKey, Message message) throws AmqpException;
+</code></pre>
+
+<h3 id="toc_4">消费者 API，receive() 和 receiveAndConvert()</h3>
+
+<pre><code class="language-JAVA">    // 从默认队列中读取消息，返回 message 或 null 如果消息为空；
+    Message receive() throws AmqpException;
+    // 从指定队列中读取消息，返回 message 或 null 如果消息为空；
+    Message receive(String queueName) throws AmqpException;
+    // 从默认队列中读取消息，返回指定类型的对象 或 null 如果消息为空；
+    Object receiveAndConvert() throws AmqpException;
+    // 从指定队列中读取消息，返回指定类型的对象 或 null 如果消息为空；
+    Object receiveAndConvert(String queueName) throws AmqpException;
+</code></pre>
+
+<h2 id="toc_5">消费者</h2>
+
+<pre><code class="language-JAVA">    // 从默认队列中读取消息，返回 message 或 null 如果消息为空；
+    Message receive() throws AmqpException;
+    // 从指定队列中读取消息，返回 message 或 null 如果消息为空；
+    Message receive(String queueName) throws AmqpException;
+    // 从默认队列中读取消息，返回指定类型的对象 或 null 如果消息为空；
+    Object receiveAndConvert() throws AmqpException;
+    // 从指定队列中读取消息，返回指定类型的对象 或 null 如果消息为空；
+    Object receiveAndConvert(String queueName) throws AmqpException;
+</code></pre>
+
+<pre><code class="language-JAVA">Spittle spittle = (Spittle) rabbit.receiveAndConvert(&quot;spittle.alert.queue&quot;);
+</code></pre>
+
+<h3 id="toc_6">示例</h3>
+
+<pre><code class="language-XML">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans:beans xmlns:beans=&quot;http://www.springframework.org/schema/beans&quot;
+             xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+             xmlns=&quot;http://www.springframework.org/schema/rabbit&quot;
+             xsi:schemaLocation=&quot;http://www.springframework.org/schema/rabbit
+             http://www.springframework.org/schema/rabbit/spring-rabbit-1.0.xsd
+             http://www.springframework.org/schema/beans
+             http://www.springframework.org/schema/beans/spring-beans.xsd&quot;&gt;
+
+    &lt;!-- 导入基本配置 --&gt;
+    &lt;beans:import resource=&quot;amqp-shared.xml&quot; /&gt;
+
+    &lt;!--========= RabbitTemplate 配置.开始 =========--&gt;
+
+    &lt;!-- 未设置默认 exchnage 和 routing-key --&gt;
+    &lt;template id=&quot;rabbitTemplate&quot;
+              connection-factory=&quot;connectionFactory&quot; /&gt;
+
+    &lt;!-- or --&gt;
+
+    &lt;!-- 设置了默认 routing-key --&gt;
+    &lt;template id=&quot;rabbitTemplate&quot;
+              connection-factory=&quot;connectionFactory&quot;
+              routing-key=&quot;spittle.alerts&quot; /&gt;
+
+    &lt;!-- or --&gt;
+
+    &lt;!-- 设置了默认 exchange 和 routing-key --&gt;
+    &lt;template id=&quot;rabbitTemplate&quot;
+              connection-factory=&quot;connectionFactory&quot;
+              exchange=&quot;spittle.alert.exchange&quot;
+              routing-key=&quot;spittle.alerts&quot; /&gt;
+    &lt;!--========= RabbitTemplate 配置.结束 =========--&gt;
+
+&lt;/beans:beans&gt;
+</code></pre>
+
+<p>调用 RabbitTemplate 接口收发消息</p>
+
+<pre><code class="language-JAVA">package spittr.alerts;
+
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import spittr.domain.Spittle;
+
+public class AlertServiceImpl implements AlertService {
+
+    @Autowired
+    private RabbitTemplate rabbit;
+
+    public AlertServiceImpl(RabbitTemplate rabbit) {
+        this.rabbit = rabbit;
+    }
+
+    public void sendSpittleAlert(Spittle spittle) {
+        rabbit.convertAndSend(&quot;spittle.alert.exchange&quot;,
+                &quot;spittle.alerts&quot;,
+                spittle);
+    }
+
+    @Override
+    public Spittle receiveSpittleAlert() {
+        return (Spittle) rabbit.receiveAndConvert(&quot;spittle.alerts&quot;);
+    }
+}
+</code></pre>
+
+<p>启动生产者</p>
+
+<pre><code class="language-JAVA">package spittr.message;
+
+import java.util.Date;
+
+import org.junit.Ignore;
+import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import spittr.domain.Spittle;
+
+@Ignore
+public class ProducerMain {
+
+  public static void main(String[] args) throws Exception {
+    
+    ApplicationContext context = new ClassPathXmlApplicationContext(&quot;META-INF/spring/amqp-producer.xml&quot;);
+    AmqpTemplate template = (AmqpTemplate) context.getBean(&quot;rabbitTemplate&quot;);
+    
+    for (int i=0; i &lt; 20; i++) {
+      System.out.println(&quot;Sending message #&quot; + i);
+      Spittle spittle = new Spittle((long) i, null, &quot;Hello world (&quot; + i + &quot;)&quot;, new Date());
+      template.convertAndSend(spittle);
+      Thread.sleep(5000);
+    }
+    
+    System.out.println(&quot;Done!&quot;);
+    
+  }
+
+}
+</code></pre>
+
+<p>启动消费者</p>
+
+<pre><code>package spittr.message;
+
+import org.junit.Ignore;
+import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import spittr.alerts.AlertService;
+import spittr.alerts.AlertServiceImpl;
+import spittr.domain.Spittle;
+
+@Ignore
+public class ConsumerMain {
+
+    public static void main(String[] args) throws Exception {
+        ApplicationContext context = new ClassPathXmlApplicationContext(&quot;META-INF/spring/amqp-producer.xml&quot;);
+        RabbitTemplate template = (RabbitTemplate) context.getBean(&quot;rabbitTemplate&quot;);
+
+        AlertService alertService = new AlertServiceImpl(template);
+        while (true){
+            Spittle s = alertService.receiveSpittleAlert();
+            System.out.println(s);
+            Thread.sleep(5000);
+        }
+    }
+
+}
+</code></pre>
+
+<h2 id="toc_7">消息监听</h2>
+
+<pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans:beans xmlns=&quot;http://www.springframework.org/schema/rabbit&quot;
+             xmlns:beans=&quot;http://www.springframework.org/schema/beans&quot;
+             xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+             xsi:schemaLocation=&quot;http://www.springframework.org/schema/rabbit
+             http://www.springframework.org/schema/rabbit/spring-rabbit-1.0.xsd
+             http://www.springframework.org/schema/beans
+             http://www.springframework.org/schema/beans/spring-beans.xsd&quot;&gt;
+
+    &lt;!-- 导入基本配置 --&gt;
+    &lt;beans:import resource=&quot;amqp-shared.xml&quot; /&gt;
+
+    &lt;!--========= 监听配置.开始 =========--&gt;
+    &lt;listener-container connection-factory=&quot;connectionFactory&quot; &gt;
+        &lt;listener ref=&quot;spittleListener&quot;
+                  method=&quot;handleSpittleAlert&quot;
+                  queues=&quot;spittleAlertQueue&quot; /&gt;
+    &lt;/listener-container&gt;
+
+    &lt;beans:bean id=&quot;spittleListener&quot; class=&quot;spittr.alerts.SpittleAlertHandler&quot; /&gt;
+    &lt;!--========= 监听配置.结束 =========--&gt;
+
+&lt;/beans:beans&gt;
+</code></pre>
+
+<p>监听处理者：</p>
+
+<pre><code>package spittr.alerts;
+
+import spittr.domain.Spittle;
+
+public class SpittleAlertHandler {
+  
+  public void handleSpittleAlert(Spittle spittle) {
+    System.out.println(spittle.getMessage());
+  }
+
+}
+</code></pre>
+
+<p>发起监听：</p>
+
+<pre><code>package spittr.message;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class ConsumerMain {
+
+  public static void main(String[] args) {
+    ApplicationContext context = new ClassPathXmlApplicationContext(&quot;META-INF/spring/amqp-consumer.xml&quot;);
+  }
+
+}
+</code></pre>
 
 
 			
@@ -785,19 +1103,314 @@ public class SpringbootinitApplicationTests {
 	<article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
 		<div class="meta">
 			<div class="date">
-				<time datetime="2016-10-16T10:41:31+08:00" itemprop="datePublished">2016/10/16</time>
+				<time datetime="2016-10-03T16:03:27+08:00" itemprop="datePublished">2016/10/3</time>
 			</div>
 			<div class="tags">posted in 
 			
-			    <a class='category' href='Life.html'>Life</a>&nbsp;
+			    <a class='category' href='Spring.html'>Spring</a>&nbsp;
 			 
 			</div>
 		</div>
-		<h1 class="title" itemprop="name"><a href="14792640913702.html" itemprop="url">
-		第一篇blog</a></h1>
+		<h1 class="title" itemprop="name"><a href="14754818073700.html" itemprop="url">
+		Spring消息(1) JMS</a></h1>
 		<div class="entry-content" itemprop="articleBody">
 			
-			<p>用MWeb写博客，一键发布！</p>
+			<p><em>——《Spring实战》笔记 第17章</em></p>
+
+<p>第 15 章讲的 RMI、Hessian、Burlap、HttpInvoker 是同步通信，而消息通信是异步通信。</p>
+
+<p><strong>同步通信的限制</strong>：<br/>
+1. <strong>同步通信意味着等待</strong>，客户端必须等待远程方法结束后才能继续执行，服务端的性能也会客户端的性能；<br/>
+2. <strong>客户端通过服务接口与远程服务耦合</strong>，如果服务端接口有变化，客户端也要调整；<br/>
+3. <strong>客户端与远程服务的位置耦合</strong>，客户端必须配置服务的网络位置，如果网络拓扑调整，客户端也要重新配置；<br/>
+4. <strong>客户端与服务的可用性耦合</strong>，远程服务不可用，客户端也不可用。</p>
+
+<p><strong>异步消息的优势</strong>：<br/>
+1. <strong>无需等待</strong>，客户端不必等待消息被处理甚至是被投递，客户端只要把消息发送给消息代理；<br/>
+2. <strong>面向消息和解耦</strong>，异步消息是以数据为中心的，客户端没有与特定的方法签名（JAVA 接口）绑定，任何可以处理数据队列或主题订阅者都可以处理由客户端发送的消息，而客户端不必了解远程服务的任何范畴；<br/>
+3. <strong>位置独立</strong>，客户端和服务端无需知道对方是谁，对方的网络位置，他们只与消息中心通讯，客户端和服务端网络位置的改变不会影响另一端，除非消息中心网络位置调整了；<br/>
+4. <strong>确保投递</strong>，消息被存储在消息中心，即使服务端不可用了消息也不会丢失，在服务端回复后可以继续处理消息；</p>
+
+<h2 id="toc_0">安装并启动 ActiveMQ 服务</h2>
+
+<p>Mac OS</p>
+
+<pre><code>brew install apache-activemq # 安装
+activemq start  # 启动
+netstat -an | grep 61616 # 查看端口是否监听
+</code></pre>
+
+<p>在浏览器管理消息：<a href="http://localhost:8161/admin">http://localhost:8161/admin</a>   用户名/密码: admin/admin</p>
+
+<h2 id="toc_1">配置</h2>
+
+<h3 id="toc_2">配置消息中心连接工厂</h3>
+
+<pre><code class="language-XML">&lt;!-- 使用默认 IP 和端口 --&gt;
+&lt;bean id=&quot;connectionFactory&quot;
+      class=&quot;org.apache.activemq.spring.ActiveMQConnectionFactory&quot; /&gt;
+&lt;!-- or --&gt;
+&lt;!-- 指定 IP 和端口 --&gt;
+&lt;bean id=&quot;connectionFactory&quot;
+      class=&quot;org.apache.activemq.spring.ActiveMQConnectionFactory&quot;
+      p:brokerURL=&quot;tcp://localhost:61616&quot; /&gt;
+&lt;!-- or --&gt;
+&lt;!--  首先要声明空间：xmlns:amq=&quot;http://activemq.apache.org/schema/core&quot; --&gt;
+&lt;amq:connectionFactory id=&quot;connectionFactory&quot; brokerURL=&quot;tcp://localhost:61616&quot;/&gt;
+</code></pre>
+
+<h3 id="toc_3">声明 ActiveMQ 消息目的地</h3>
+
+<pre><code>&lt;!--队列类型--&gt;
+&lt;bean id=&quot;spittleQueue&quot; class=&quot;org.apache.activemq.command.ActiveMQQueue&quot;
+      c:_=&quot;spittle.alert.queue&quot; /&gt;
+&lt;!-- or --&gt;
+&lt;!--主题类型--&gt;
+&lt;bean id=&quot;spittleTopic&quot; class=&quot;org.apache.activemq.command.ActiveMQTopic&quot;
+      c:_=&quot;spittle.alert.topic&quot; /&gt;
+&lt;!-- or --&gt;
+&lt;!-- 队列类型 --&gt;
+&lt;amq:queue id=&quot;spittleQueue&quot; physicalName=&quot;spittle.alert.queue&quot; /&gt;
+&lt;!-- or --&gt;
+&lt;!-- 主题类型 --&gt;
+&lt;amq:topic id=&quot;spittleTopic&quot; physicalName=&quot;spittle.alert.topic&quot; /&gt;
+</code></pre>
+
+<h3 id="toc_4">配置 JMS 模板</h3>
+
+<pre><code class="language-XML">&lt;!-- 最简配置 --&gt;
+&lt;bean id=&quot;jmsTemplate&quot;
+      class=&quot;org.springframework.jms.core.JmsTemplate&quot;
+       c:_-ref=&quot;connectionFactory&quot; /&gt;
+&lt;!-- or --&gt;       
+&lt;!-- + 设置默认目的地 --&gt;
+&lt;bean id=&quot;jmsTemplate&quot;
+      class=&quot;org.springframework.jms.core.JmsTemplate&quot;
+      c:_-ref=&quot;connectionFactory&quot;
+      p:defaultDestination-ref=&quot;spittleQueue&quot;/&gt;
+      
+&lt;!-- or --&gt;
+
+&lt;!-- + 设置消息转换器 --&gt;
+&lt;bean id=&quot;messageConverter&quot; 
+      class=&quot;org.springframework.jms.support.converter.MappingJackson2MessageConverter&quot; /&gt;
+      
+&lt;bean id=&quot;jmsTemplate&quot;
+      class=&quot;org.springframework.jms.core.JmsTemplate&quot;
+      c:_-ref=&quot;connectionFactory&quot;
+      p:defaultDestinationName=&quot;spittle.alert.queue&quot;
+      p:messageConverter-ref=&quot;messageConverter&quot; /&gt;      
+</code></pre>
+
+<h3 id="toc_5">配置消息监听器</h3>
+
+<hr/>
+
+<h2 id="toc_6">发送消息 send()</h2>
+
+<p>JmsOperations 接口 send()方法有3个重载方法，JmsTemplate实现了JmsOperations接口</p>
+
+<pre><code class="language-JAVA">    // 发送到默认目的地，要求配置默认目的地
+    void send(MessageCreator messageCreator) throws JmsException;
+    // 发送到指定目的地
+    void send(Destination destination, MessageCreator messageCreator) throws JmsException;
+    // 发送到指定目的地
+    void send(String destinationName, MessageCreator messageCreator) throws JmsException;
+</code></pre>
+
+<p>通过上面的的接口可以看出，在发送消息时可选择发送到默认目的地或者指定目的地， 目的地可以通过应用或者名称指定，另外，这些方法都有MessageCreator类型的参数，这是一个接口，实现该接口的方法要实现将消息体对象转化为javax.jms.Message类型的对象。</p>
+
+<p>示例：</p>
+
+<pre><code class="language-发送到指定目的地">  public AlertServiceImpl(JmsOperations jmsOperations) {
+    this.jmsOperations = jmsOperations;
+  }
+
+  // 发送到指定目的地
+  public void sendSpittleAlert(final Spittle spittle) {
+    jmsOperations.send(
+      &quot;spittle.alert.queue&quot;,
+      new MessageCreator() {
+        public Message createMessage(Session session)
+                       throws JMSException {
+          return session.createObjectMessage(spittle);
+        }
+      }
+    );
+  }
+
+  // 发送到默认目的地
+  public void sendSpittleAlert2Defualt(final Spittle spittle) {
+    jmsOperations.send(
+      new MessageCreator() {
+        public Message createMessage(Session session)
+                       throws JMSException {
+          return session.createObjectMessage(spittle);
+        }
+      }
+    );
+  }
+</code></pre>
+
+<hr/>
+
+<h2 id="toc_7">发送消息时，对消息进行转换 convertAndSend()</h2>
+
+<pre><code>    void convertAndSend(Object message) throws JmsException;
+    void convertAndSend(Destination destination, Object message) throws JmsException;
+    void convertAndSend(String destinationName, Object message) throws JmsException;
+    void convertAndSend(Object message, MessagePostProcessor postProcessor)
+        throws JmsException;
+</code></pre>
+
+<p>可选的消息转换器：</p>
+
+<ol>
+<li>MappingJacksonMessageConverter, Jackson JSON 库，JSON 格式转换，Spring 4有已废除；</li>
+<li>MappingJacksonMessageConverter, Jackson 2 JSON库，JSON 格式转换；</li>
+<li>MarshallingMessageConverter, JAXB库，XML 格式转换；</li>
+<li>SimpleMessageConverter，默认转换器，转换String 与 TextMessage，Map 与 MapMessage（ByteMessage），Serializable 对象与 ObjectMessage。</li>
+</ol>
+
+<p>默认消息转换器是 SimpleMessageConverter，如果要使用其它转换器，可以设置默认转换器：</p>
+
+<pre><code>&lt;!-- 消息转换器 --&gt;
+&lt;bean id=&quot;messageConverter&quot;
+          class=&quot;org.springframework.jms.support.converter.MappingJackson2MessageConverter&quot;&gt;
+        &lt;property name=&quot;typeIdMappings&quot;&gt;
+            &lt;map&gt;
+                &lt;entry key=&quot;Spittle&quot; value=&quot;spittr.domain.Spittle&quot;/&gt;
+            &lt;/map&gt;
+        &lt;/property&gt;
+        &lt;property name=&quot;typeIdPropertyName&quot; value=&quot;Spittle&quot;/&gt;
+    &lt;/bean&gt;
+      
+&lt;bean id=&quot;jmsTemplate&quot;
+      class=&quot;org.springframework.jms.core.JmsTemplate&quot;
+      c:_-ref=&quot;connectionFactory&quot;
+      p:defaultDestinationName=&quot;spittle.alert.queue&quot;
+      p:messageConverter-ref=&quot;messageConverter&quot; /&gt;     
+</code></pre>
+
+<p>代码：</p>
+
+<pre><code class="language-JAVA">    public void sendAndConvertSpittleAlert2Default(Spittle spittle) {
+        jmsOperations.convertAndSend(spittle);
+    }
+
+    public void sendAndConvertSpittleAlert(Spittle spittle) {
+        jmsOperations.convertAndSend(&quot;spittle.alert.queue&quot;,spittle);
+    }
+</code></pre>
+
+<p>实验后发现 MappingJackson2MessageConverter 是个大坑， 必须配置typeIdPropertyName 和 typeIdMappings 否则无法转换，而且生产者和消费者都必须配置。<br/>
+由于监听没有该配置项，所以监听不能用MappingJackson2MessageConverter。</p>
+
+<h2 id="toc_8">接收消息 receive() 和 receiveAndConvert()</h2>
+
+<p>接受消息有 receive() 和 receiveAndConvert() 2个方法，前者返回的是 ObjectMessage，ObjectMessage 有getObject()方法获取消息体，但是会抛出检查下型异常 JMSException，一般 用 <code>JmsUtils.convertJmsAccessException(e)</code>将异常转化为非检查型异常，后缀可以直接将消息转化为实体对象，且抛出的是非检查型异常。</p>
+
+<pre><code class="language-JAVA">    public Spittle getSpittleAlert() {
+        try {
+            ObjectMessage message = (ObjectMessage) jmsOperations.receive();
+            return (Spittle) message.getObject();
+        } catch (JMSException e) {
+            // 将 JMSException异常转换为未检查行异常 JmsException
+            throw JmsUtils.convertJmsAccessException(e); 
+        }
+    }
+
+    public Spittle retrieveSpittleAlert() {
+        return (Spittle) jmsOperations.receiveAndConvert();
+    }
+</code></pre>
+
+<p>启动消息处理：</p>
+
+<pre><code class="language-JAVA">     public static void main(String[] args) {
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(&quot;META-INF/spring/messaging.xml&quot;);
+        AlertService alertService = context.getBean(AlertService.class);
+        while (true) {
+            Spittle s = alertService.retrieveSpittleAlert();
+            System.out.println(s);
+        }
+    }
+</code></pre>
+
+<p>receive() 和 receiveAndConvert() 的缺点是 他们都是同步的，只有在有消息是才会唤醒，否则一直等待。</p>
+
+<hr/>
+
+<h2 id="toc_9">配置和使用消息监听器</h2>
+
+<p>前面的 receive() 和 receiveAndConvert() 是接收并处理消息的一种方法，但是需要显式的获取消息再处理。</p>
+
+<p>EJB2 规范引入了 消息驱动 Bean（message-driven bean, MDB）,MDB 是可以异步处理消息的 EJB,它将目的地中消息作为事件，并对这些事件进行相应。而与之相反的是，同步消息接受这在消息可用前一直处理堵塞状态。</p>
+
+<p>EJB2 MDB的唯一缺点是它们必须实现 java.ejb.MessageDrivenBean,此外还必须实现一些 EJB 生命周期的回调方法。简而言之，EJB 2 MDB 不是纯 POJO。</p>
+
+<p>EJB 3规范中，MDB 进一步简化， 使其更像 POJO，不在需要实现 MessageDrivenBean，而是实现更通用的 javax.jms.MessageListener接口，并使用 @MessageDriven 注解标注 MDB。</p>
+
+<p>Spring 2.0提供了它自己的消息驱动 bean 来满足接收异步消息的需求，形式与 EJB 3 的 MDB相似。</p>
+
+<p>Spring 提供了以 POJO 的方式处理消息的能力。</p>
+
+<p>第一步，编写处理消息对象的代码，跟普通代码没什么区别，以下代码没有迹象表明它跟 JMS 有关，但是通过配置就可以使用它处理消息。</p>
+
+<pre><code class="language-JAVA">package spittr.alerts;
+
+import spittr.domain.Spittle;
+
+public class SpittleAlertHandler {
+
+    public void handleSpittleAlert(Spittle spittle) {
+        System.out.println(spittle.getMessage());
+    }
+
+}
+</code></pre>
+
+<p>第二步，配置消息监听</p>
+
+<pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+       xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+       xmlns:jms=&quot;http://www.springframework.org/schema/jms&quot;
+       xmlns:amq=&quot;http://activemq.apache.org/schema/core&quot;
+       xsi:schemaLocation=&quot;http://www.springframework.org/schema/jms
+        http://www.springframework.org/schema/jms/spring-jms-3.2.xsd
+        http://activemq.apache.org/schema/core
+        http://activemq.apache.org/schema/core/activemq-core.xsd
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd&quot;&gt;
+
+    &lt;amq:connectionFactory id=&quot;connectionFactory&quot; brokerURL=&quot;tcp://localhost:61616&quot;/&gt;
+
+    &lt;bean id=&quot;spittleHandler&quot; class=&quot;spittr.alerts.SpittleAlertHandler&quot; /&gt;
+
+    &lt;jms:listener-container&gt;
+        &lt;jms:listener destination=&quot;spittle.alert.queue&quot;
+                      ref=&quot;spittleHandler&quot;
+                      method=&quot;handleSpittleAlert&quot;
+        /&gt;
+    &lt;/jms:listener-container&gt;
+
+&lt;/beans&gt;
+</code></pre>
+
+<p>最后，启动监听应用：</p>
+
+<pre><code class="language-JAVA">package spittr;
+
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class JmsListenerMain {
+
+    public static void main(String[] args) {
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(&quot;META-INF/spring/message_listener.xml&quot;);
+    }
+}
+</code></pre>
 
 
 			

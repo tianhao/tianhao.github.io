@@ -4,7 +4,7 @@
   <title><![CDATA[#(coding X)]]></title>
   <link href="tianhaox.com/atom.xml" rel="self"/>
   <link href="tianhaox.com/"/>
-  <updated>2017-09-19T02:01:15+08:00</updated>
+  <updated>2017-09-19T02:07:52+08:00</updated>
   <id>tianhaox.com/</id>
   <author>
     <name><![CDATA[]]></name>
@@ -12,6 +12,17 @@
   </author>
   <generator uri="http://www.coderforart.com/">CoderForArt</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[博客添加了gitment评论功能，要求 Github 登录]]></title>
+    <link href="tianhaox.com/15057592893281.html"/>
+    <updated>2017-09-19T02:28:09+08:00</updated>
+    <id>tianhaox.com/15057592893281.html</id>
+    <content type="html"><![CDATA[
+<p>但是发现访问速度慢了很多，先观察一段时间，其实gitment不需要博客也在Github</p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[SpringBoot 开发工具]]></title>

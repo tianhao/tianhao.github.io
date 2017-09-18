@@ -143,6 +143,12 @@ http://weibo.com/liemi" title="weibo">Weibo</a>
                             
                             
                             <li class="post">
+                                <a href="15057592893281.html">博客添加了gitment评论功能，要求 Github 登录</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
                                 <a href="14787505123542.html">SpringBoot 开发工具</a>
                             </li>
                             
@@ -171,10 +177,6 @@ http://weibo.com/liemi" title="weibo">Weibo</a>
                             </li>
                             
                             
-                            
-                            <li class="post">
-                                <a href="14785139214429.html">Spring Boot 入门：安装和构建</a>
-                            </li>
                             
                             
                             
@@ -206,6 +208,325 @@ http://weibo.com/liemi" title="weibo">Weibo</a>
 <div itemscope itemtype="http://schema.org/Blog">
 
 
+	<article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+		<div class="meta">
+			<div class="date">
+				<time datetime="2016-10-03T16:03:27+08:00" itemprop="datePublished">2016/10/3</time>
+			</div>
+			<div class="tags">posted in 
+			
+			    <a class='category' href='Spring.html'>Spring</a>&nbsp;
+			 
+			</div>
+		</div>
+		<h1 class="title" itemprop="name"><a href="14754818073700.html" itemprop="url">
+		Spring消息(1) JMS</a></h1>
+		<div class="entry-content" itemprop="articleBody">
+			
+			<p><em>——《Spring实战》笔记 第17章</em></p>
+
+<p>第 15 章讲的 RMI、Hessian、Burlap、HttpInvoker 是同步通信，而消息通信是异步通信。</p>
+
+<p><strong>同步通信的限制</strong>：<br/>
+1. <strong>同步通信意味着等待</strong>，客户端必须等待远程方法结束后才能继续执行，服务端的性能也会客户端的性能；<br/>
+2. <strong>客户端通过服务接口与远程服务耦合</strong>，如果服务端接口有变化，客户端也要调整；<br/>
+3. <strong>客户端与远程服务的位置耦合</strong>，客户端必须配置服务的网络位置，如果网络拓扑调整，客户端也要重新配置；<br/>
+4. <strong>客户端与服务的可用性耦合</strong>，远程服务不可用，客户端也不可用。</p>
+
+<p><strong>异步消息的优势</strong>：<br/>
+1. <strong>无需等待</strong>，客户端不必等待消息被处理甚至是被投递，客户端只要把消息发送给消息代理；<br/>
+2. <strong>面向消息和解耦</strong>，异步消息是以数据为中心的，客户端没有与特定的方法签名（JAVA 接口）绑定，任何可以处理数据队列或主题订阅者都可以处理由客户端发送的消息，而客户端不必了解远程服务的任何范畴；<br/>
+3. <strong>位置独立</strong>，客户端和服务端无需知道对方是谁，对方的网络位置，他们只与消息中心通讯，客户端和服务端网络位置的改变不会影响另一端，除非消息中心网络位置调整了；<br/>
+4. <strong>确保投递</strong>，消息被存储在消息中心，即使服务端不可用了消息也不会丢失，在服务端回复后可以继续处理消息；</p>
+
+<h2 id="toc_0">安装并启动 ActiveMQ 服务</h2>
+
+<p>Mac OS</p>
+
+<pre><code>brew install apache-activemq # 安装
+activemq start  # 启动
+netstat -an | grep 61616 # 查看端口是否监听
+</code></pre>
+
+<p>在浏览器管理消息：<a href="http://localhost:8161/admin">http://localhost:8161/admin</a>   用户名/密码: admin/admin</p>
+
+<h2 id="toc_1">配置</h2>
+
+<h3 id="toc_2">配置消息中心连接工厂</h3>
+
+<pre><code class="language-XML">&lt;!-- 使用默认 IP 和端口 --&gt;
+&lt;bean id=&quot;connectionFactory&quot;
+      class=&quot;org.apache.activemq.spring.ActiveMQConnectionFactory&quot; /&gt;
+&lt;!-- or --&gt;
+&lt;!-- 指定 IP 和端口 --&gt;
+&lt;bean id=&quot;connectionFactory&quot;
+      class=&quot;org.apache.activemq.spring.ActiveMQConnectionFactory&quot;
+      p:brokerURL=&quot;tcp://localhost:61616&quot; /&gt;
+&lt;!-- or --&gt;
+&lt;!--  首先要声明空间：xmlns:amq=&quot;http://activemq.apache.org/schema/core&quot; --&gt;
+&lt;amq:connectionFactory id=&quot;connectionFactory&quot; brokerURL=&quot;tcp://localhost:61616&quot;/&gt;
+</code></pre>
+
+<h3 id="toc_3">声明 ActiveMQ 消息目的地</h3>
+
+<pre><code>&lt;!--队列类型--&gt;
+&lt;bean id=&quot;spittleQueue&quot; class=&quot;org.apache.activemq.command.ActiveMQQueue&quot;
+      c:_=&quot;spittle.alert.queue&quot; /&gt;
+&lt;!-- or --&gt;
+&lt;!--主题类型--&gt;
+&lt;bean id=&quot;spittleTopic&quot; class=&quot;org.apache.activemq.command.ActiveMQTopic&quot;
+      c:_=&quot;spittle.alert.topic&quot; /&gt;
+&lt;!-- or --&gt;
+&lt;!-- 队列类型 --&gt;
+&lt;amq:queue id=&quot;spittleQueue&quot; physicalName=&quot;spittle.alert.queue&quot; /&gt;
+&lt;!-- or --&gt;
+&lt;!-- 主题类型 --&gt;
+&lt;amq:topic id=&quot;spittleTopic&quot; physicalName=&quot;spittle.alert.topic&quot; /&gt;
+</code></pre>
+
+<h3 id="toc_4">配置 JMS 模板</h3>
+
+<pre><code class="language-XML">&lt;!-- 最简配置 --&gt;
+&lt;bean id=&quot;jmsTemplate&quot;
+      class=&quot;org.springframework.jms.core.JmsTemplate&quot;
+       c:_-ref=&quot;connectionFactory&quot; /&gt;
+&lt;!-- or --&gt;       
+&lt;!-- + 设置默认目的地 --&gt;
+&lt;bean id=&quot;jmsTemplate&quot;
+      class=&quot;org.springframework.jms.core.JmsTemplate&quot;
+      c:_-ref=&quot;connectionFactory&quot;
+      p:defaultDestination-ref=&quot;spittleQueue&quot;/&gt;
+      
+&lt;!-- or --&gt;
+
+&lt;!-- + 设置消息转换器 --&gt;
+&lt;bean id=&quot;messageConverter&quot; 
+      class=&quot;org.springframework.jms.support.converter.MappingJackson2MessageConverter&quot; /&gt;
+      
+&lt;bean id=&quot;jmsTemplate&quot;
+      class=&quot;org.springframework.jms.core.JmsTemplate&quot;
+      c:_-ref=&quot;connectionFactory&quot;
+      p:defaultDestinationName=&quot;spittle.alert.queue&quot;
+      p:messageConverter-ref=&quot;messageConverter&quot; /&gt;      
+</code></pre>
+
+<h3 id="toc_5">配置消息监听器</h3>
+
+<hr/>
+
+<h2 id="toc_6">发送消息 send()</h2>
+
+<p>JmsOperations 接口 send()方法有3个重载方法，JmsTemplate实现了JmsOperations接口</p>
+
+<pre><code class="language-JAVA">    // 发送到默认目的地，要求配置默认目的地
+    void send(MessageCreator messageCreator) throws JmsException;
+    // 发送到指定目的地
+    void send(Destination destination, MessageCreator messageCreator) throws JmsException;
+    // 发送到指定目的地
+    void send(String destinationName, MessageCreator messageCreator) throws JmsException;
+</code></pre>
+
+<p>通过上面的的接口可以看出，在发送消息时可选择发送到默认目的地或者指定目的地， 目的地可以通过应用或者名称指定，另外，这些方法都有MessageCreator类型的参数，这是一个接口，实现该接口的方法要实现将消息体对象转化为javax.jms.Message类型的对象。</p>
+
+<p>示例：</p>
+
+<pre><code class="language-发送到指定目的地">  public AlertServiceImpl(JmsOperations jmsOperations) {
+    this.jmsOperations = jmsOperations;
+  }
+
+  // 发送到指定目的地
+  public void sendSpittleAlert(final Spittle spittle) {
+    jmsOperations.send(
+      &quot;spittle.alert.queue&quot;,
+      new MessageCreator() {
+        public Message createMessage(Session session)
+                       throws JMSException {
+          return session.createObjectMessage(spittle);
+        }
+      }
+    );
+  }
+
+  // 发送到默认目的地
+  public void sendSpittleAlert2Defualt(final Spittle spittle) {
+    jmsOperations.send(
+      new MessageCreator() {
+        public Message createMessage(Session session)
+                       throws JMSException {
+          return session.createObjectMessage(spittle);
+        }
+      }
+    );
+  }
+</code></pre>
+
+<hr/>
+
+<h2 id="toc_7">发送消息时，对消息进行转换 convertAndSend()</h2>
+
+<pre><code>    void convertAndSend(Object message) throws JmsException;
+    void convertAndSend(Destination destination, Object message) throws JmsException;
+    void convertAndSend(String destinationName, Object message) throws JmsException;
+    void convertAndSend(Object message, MessagePostProcessor postProcessor)
+        throws JmsException;
+</code></pre>
+
+<p>可选的消息转换器：</p>
+
+<ol>
+<li>MappingJacksonMessageConverter, Jackson JSON 库，JSON 格式转换，Spring 4有已废除；</li>
+<li>MappingJacksonMessageConverter, Jackson 2 JSON库，JSON 格式转换；</li>
+<li>MarshallingMessageConverter, JAXB库，XML 格式转换；</li>
+<li>SimpleMessageConverter，默认转换器，转换String 与 TextMessage，Map 与 MapMessage（ByteMessage），Serializable 对象与 ObjectMessage。</li>
+</ol>
+
+<p>默认消息转换器是 SimpleMessageConverter，如果要使用其它转换器，可以设置默认转换器：</p>
+
+<pre><code>&lt;!-- 消息转换器 --&gt;
+&lt;bean id=&quot;messageConverter&quot;
+          class=&quot;org.springframework.jms.support.converter.MappingJackson2MessageConverter&quot;&gt;
+        &lt;property name=&quot;typeIdMappings&quot;&gt;
+            &lt;map&gt;
+                &lt;entry key=&quot;Spittle&quot; value=&quot;spittr.domain.Spittle&quot;/&gt;
+            &lt;/map&gt;
+        &lt;/property&gt;
+        &lt;property name=&quot;typeIdPropertyName&quot; value=&quot;Spittle&quot;/&gt;
+    &lt;/bean&gt;
+      
+&lt;bean id=&quot;jmsTemplate&quot;
+      class=&quot;org.springframework.jms.core.JmsTemplate&quot;
+      c:_-ref=&quot;connectionFactory&quot;
+      p:defaultDestinationName=&quot;spittle.alert.queue&quot;
+      p:messageConverter-ref=&quot;messageConverter&quot; /&gt;     
+</code></pre>
+
+<p>代码：</p>
+
+<pre><code class="language-JAVA">    public void sendAndConvertSpittleAlert2Default(Spittle spittle) {
+        jmsOperations.convertAndSend(spittle);
+    }
+
+    public void sendAndConvertSpittleAlert(Spittle spittle) {
+        jmsOperations.convertAndSend(&quot;spittle.alert.queue&quot;,spittle);
+    }
+</code></pre>
+
+<p>实验后发现 MappingJackson2MessageConverter 是个大坑， 必须配置typeIdPropertyName 和 typeIdMappings 否则无法转换，而且生产者和消费者都必须配置。<br/>
+由于监听没有该配置项，所以监听不能用MappingJackson2MessageConverter。</p>
+
+<h2 id="toc_8">接收消息 receive() 和 receiveAndConvert()</h2>
+
+<p>接受消息有 receive() 和 receiveAndConvert() 2个方法，前者返回的是 ObjectMessage，ObjectMessage 有getObject()方法获取消息体，但是会抛出检查下型异常 JMSException，一般 用 <code>JmsUtils.convertJmsAccessException(e)</code>将异常转化为非检查型异常，后缀可以直接将消息转化为实体对象，且抛出的是非检查型异常。</p>
+
+<pre><code class="language-JAVA">    public Spittle getSpittleAlert() {
+        try {
+            ObjectMessage message = (ObjectMessage) jmsOperations.receive();
+            return (Spittle) message.getObject();
+        } catch (JMSException e) {
+            // 将 JMSException异常转换为未检查行异常 JmsException
+            throw JmsUtils.convertJmsAccessException(e); 
+        }
+    }
+
+    public Spittle retrieveSpittleAlert() {
+        return (Spittle) jmsOperations.receiveAndConvert();
+    }
+</code></pre>
+
+<p>启动消息处理：</p>
+
+<pre><code class="language-JAVA">     public static void main(String[] args) {
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(&quot;META-INF/spring/messaging.xml&quot;);
+        AlertService alertService = context.getBean(AlertService.class);
+        while (true) {
+            Spittle s = alertService.retrieveSpittleAlert();
+            System.out.println(s);
+        }
+    }
+</code></pre>
+
+<p>receive() 和 receiveAndConvert() 的缺点是 他们都是同步的，只有在有消息是才会唤醒，否则一直等待。</p>
+
+<hr/>
+
+<h2 id="toc_9">配置和使用消息监听器</h2>
+
+<p>前面的 receive() 和 receiveAndConvert() 是接收并处理消息的一种方法，但是需要显式的获取消息再处理。</p>
+
+<p>EJB2 规范引入了 消息驱动 Bean（message-driven bean, MDB）,MDB 是可以异步处理消息的 EJB,它将目的地中消息作为事件，并对这些事件进行相应。而与之相反的是，同步消息接受这在消息可用前一直处理堵塞状态。</p>
+
+<p>EJB2 MDB的唯一缺点是它们必须实现 java.ejb.MessageDrivenBean,此外还必须实现一些 EJB 生命周期的回调方法。简而言之，EJB 2 MDB 不是纯 POJO。</p>
+
+<p>EJB 3规范中，MDB 进一步简化， 使其更像 POJO，不在需要实现 MessageDrivenBean，而是实现更通用的 javax.jms.MessageListener接口，并使用 @MessageDriven 注解标注 MDB。</p>
+
+<p>Spring 2.0提供了它自己的消息驱动 bean 来满足接收异步消息的需求，形式与 EJB 3 的 MDB相似。</p>
+
+<p>Spring 提供了以 POJO 的方式处理消息的能力。</p>
+
+<p>第一步，编写处理消息对象的代码，跟普通代码没什么区别，以下代码没有迹象表明它跟 JMS 有关，但是通过配置就可以使用它处理消息。</p>
+
+<pre><code class="language-JAVA">package spittr.alerts;
+
+import spittr.domain.Spittle;
+
+public class SpittleAlertHandler {
+
+    public void handleSpittleAlert(Spittle spittle) {
+        System.out.println(spittle.getMessage());
+    }
+
+}
+</code></pre>
+
+<p>第二步，配置消息监听</p>
+
+<pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+       xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+       xmlns:jms=&quot;http://www.springframework.org/schema/jms&quot;
+       xmlns:amq=&quot;http://activemq.apache.org/schema/core&quot;
+       xsi:schemaLocation=&quot;http://www.springframework.org/schema/jms
+        http://www.springframework.org/schema/jms/spring-jms-3.2.xsd
+        http://activemq.apache.org/schema/core
+        http://activemq.apache.org/schema/core/activemq-core.xsd
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd&quot;&gt;
+
+    &lt;amq:connectionFactory id=&quot;connectionFactory&quot; brokerURL=&quot;tcp://localhost:61616&quot;/&gt;
+
+    &lt;bean id=&quot;spittleHandler&quot; class=&quot;spittr.alerts.SpittleAlertHandler&quot; /&gt;
+
+    &lt;jms:listener-container&gt;
+        &lt;jms:listener destination=&quot;spittle.alert.queue&quot;
+                      ref=&quot;spittleHandler&quot;
+                      method=&quot;handleSpittleAlert&quot;
+        /&gt;
+    &lt;/jms:listener-container&gt;
+
+&lt;/beans&gt;
+</code></pre>
+
+<p>最后，启动监听应用：</p>
+
+<pre><code class="language-JAVA">package spittr;
+
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class JmsListenerMain {
+
+    public static void main(String[] args) {
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(&quot;META-INF/spring/message_listener.xml&quot;);
+    }
+}
+</code></pre>
+
+
+			
+			
+		</div>
+
+	</article>
+ 
 	<article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
 		<div class="meta">
 			<div class="date">
@@ -1222,345 +1543,6 @@ eclipse {
 <p><strong>settings.gradle</strong></p>
 
 <pre><code>rootProject.name = &#39;HessianBurlap&#39;
-</code></pre>
-
-
-			
-			
-		</div>
-
-	</article>
- 
-	<article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-		<div class="meta">
-			<div class="date">
-				<time datetime="2016-09-25T18:02:01+08:00" itemprop="datePublished">2016/9/25</time>
-			</div>
-			<div class="tags">posted in 
-			
-			    <a class='category' href='Spring.html'>Spring</a>&nbsp;
-			 
-			</div>
-		</div>
-		<h1 class="title" itemprop="name"><a href="14747977219341.html" itemprop="url">
-		Spring使用远程服务(1) —— 使用RMI</a></h1>
-		<div class="entry-content" itemprop="articleBody">
-			
-			<p><em>——《Spring实战》笔记 第15章</em></p>
-
-<p>RMI可以将本地接口封装成可远程调用的服务，客户端可以像调用本地接口一样调用封装后的服务。</p>
-
-<h2 id="toc_0">前提条件</h2>
-
-<ol>
-<li>客户端和服务端都必须是Java；</li>
-<li>RMI封装的接口返回的对象必须可序列化，否则抛异常，例如：<code>public class Spitter implements Serializable {...}</code> ；</li>
-<li>由于需要序列化，所以客户端和服务端要保证版本完全一致；</li>
-</ol>
-
-<h2 id="toc_1">1. 解决发布RMI服务时不能指定registryHost的坑（多网卡不能指定网卡，比如内网网卡）</h2>
-
-<p>参见： <a href="http://stackoverflow.com/questions/10094416/rmiserviceexporter-not-working-does-not-connect-to-rmi-localhost-at-port-1099">http://stackoverflow.com/questions/10094416/rmiserviceexporter-not-working-does-not-connect-to-rmi-localhost-at-port-1099</a></p>
-
-<pre><code class="language-Java">import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
-
-public class MyRmiServiceExporter extends RmiServiceExporter {
-
-    protected Registry getRegistry(String registryHost, int registryPort,
-                                   RMIClientSocketFactory clientSocketFactory, RMIServerSocketFactory serverSocketFactory)
-            throws RemoteException
-    {
-
-        if (registryHost != null) {
-            // Host explictly specified: only lookup possible.
-            if (logger.isInfoEnabled()) {
-                logger.info(&quot;Looking for RMI registry at port &#39;&quot; + registryPort + &quot;&#39; of host [&quot; + registryHost + &quot;]&quot;);
-            }
-            try {
-                Registry reg = LocateRegistry.getRegistry(registryHost, registryPort, clientSocketFactory);
-                testRegistry(reg);
-                return reg;
-            } catch (RemoteException ex) {
-                logger.debug(&quot;RMI registry access threw exception&quot;, ex);
-                logger.warn(&quot;Could not detect RMI registry - creating new one&quot;);
-                // Assume no registry found -&gt; create new one.
-                LocateRegistry.createRegistry(registryPort);
-                Registry reg = LocateRegistry.getRegistry(registryHost, registryPort, clientSocketFactory);
-                testRegistry(reg);
-                return reg;
-            }
-        } else {
-            return getRegistry(registryPort, clientSocketFactory, serverSocketFactory);
-        }
-    }
-}
-</code></pre>
-
-<h2 id="toc_2">2.定义服务接口</h2>
-
-<pre><code class="language-Java">public interface SpitterService {
-    List&lt;Spittle&gt; getRecentSpittles(int count);
-    void saveSpittle(Spittle spittle);
-    void saveSpitter(Spitter spitter);
-    Spitter getSpitter(long id);
-    void startFollowing(Spitter follower, Spitter followee);
-    List&lt;Spittle&gt; getSpittlesForSpitter(Spitter spitter);
-    List&lt;Spittle&gt; getSpittlesForSpitter(String username);
-    Spitter getSpitter(String username);
-    Spittle getSpittleById(long id);
-    void deleteSpittle(long id);
-    List&lt;Spitter&gt; getAllSpitters();
-}
-</code></pre>
-
-<h2 id="toc_3">3.发布服务 （XML方式）</h2>
-
-<p><strong>XML配置：</strong></p>
-
-<pre><code class="language-XML">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
-&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
-       xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
-       xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans-4.0.xsd&quot;&gt;
-
-    &lt;!-- 注入要发布的RMI服务类 --&gt;
-    &lt;bean id=&quot;spitterService&quot; class=&quot;service.SpitterServiceImpl&quot;&gt;&lt;/bean&gt;
-
-    &lt;bean class=&quot;config.MyRmiServiceExporter&quot;&gt;
-        &lt;!-- RMI服务名称,可自定义服务名称 --&gt;
-        &lt;property name=&quot;serviceName&quot; value=&quot;SpitterService&quot; /&gt;
-        &lt;!-- 导出实体 --&gt;
-        &lt;property name=&quot;service&quot; ref=&quot;spitterService&quot; /&gt;
-        &lt;!-- 导出接口 --&gt;
-        &lt;property name=&quot;serviceInterface&quot; value=&quot;service.SpitterService&quot; /&gt;
-        &lt;!-- 只有使用MyRmiServiceExporter类是才有用, 使用默认类无效 --&gt;
-        &lt;property name=&quot;registryHost&quot; value=&quot;localhost&quot;/&gt;
-        &lt;!-- spring默认使用1099端口 --&gt;
-        &lt;property name=&quot;registryPort&quot; value=&quot;1199&quot; /&gt;
-
-        &lt;property name=&quot;alwaysCreateRegistry&quot; value=&quot;true&quot;/&gt;
-    &lt;/bean&gt;
-&lt;/beans&gt;
-</code></pre>
-
-<p><strong>启动RMI服务:</strong></p>
-
-<pre><code class="language-JAVA">import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-/**
- * Created by tianhao on 16/9/25.
- */
-public class ServerMainWithXml {
-    public static void main(String[] args) {
-        ApplicationContext ctx = new ClassPathXmlApplicationContext(&quot;server.xml&quot;);
-        System.out.println(&quot;已成功发布RMI服务类&quot;);
-    }
-}
-</code></pre>
-
-<h2 id="toc_4">4.客户端调用RMI服务  (XML方式)</h2>
-
-<p><strong>XML配置：</strong></p>
-
-<pre><code class="language-XML">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
-&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
-       xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
-       xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans-4.0.xsd&quot;&gt;
-
-    &lt;bean id=&quot;spitterService&quot; class=&quot;org.springframework.remoting.rmi.RmiProxyFactoryBean&quot;&gt;
-        &lt;property name=&quot;serviceUrl&quot; value=&quot;rmi://localhost:1199/SpitterService&quot; /&gt;
-        &lt;property name=&quot;serviceInterface&quot; value=&quot;service.SpitterService&quot; /&gt;
-    &lt;/bean&gt;
-&lt;/beans&gt;
-</code></pre>
-
-<p><strong>启动客户端：</strong></p>
-
-<pre><code class="language-JAVA">
-import model.Spitter;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import service.SpitterService;
-
-/**
- * Created by tianhao on 16/9/25.
- */
-public class ClientMainWithXml {
-
-    public static void main(String[] args) {
-        ApplicationContext ctx = new ClassPathXmlApplicationContext(&quot;client.xml&quot;);
-        System.out.println(&quot;加载Spring容器,并初始化RMI客户端&quot;);
-        SpitterService spitterService = (SpitterService) ctx.getBean(&quot;spitterService&quot;);
-        Spitter spitter = spitterService.getSpitter(1);
-        System.out.println(&quot;返回结果:&quot; + spitter.toString());
-    }
-}
-</code></pre>
-
-<h2 id="toc_5">5. 发布服务 （JavaConfig方式）</h2>
-
-<p><strong>配置类：</strong></p>
-
-<pre><code class="language-JAVA">package config;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import service.SpitterService;
-import service.SpitterServiceImpl;
-
-/**
- * Created by tianhao on 16/9/25.
- */
-@Configuration
-public class RMIServerConfig {
-
-    @Bean
-    public SpitterService spitterService(){
-        return new SpitterServiceImpl();
-    }
-
-    @Bean
-    public MyRmiServiceExporter rmiExporter(SpitterService spitterService){
-        MyRmiServiceExporter rmiExporter = new MyRmiServiceExporter();
-        rmiExporter.setService(spitterService);
-        rmiExporter.setServiceName(&quot;SpitterService&quot;);
-        rmiExporter.setRegistryHost(&quot;127.0.0.1&quot;);
-        rmiExporter.setRegistryPort(1199);
-        rmiExporter.setServiceInterface(SpitterService.class);
-        return rmiExporter;
-    }
-
-}
-</code></pre>
-
-<p><strong>启动RMI服务：</strong></p>
-
-<pre><code class="language-JAVA">import config.RMIServerConfig;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-
-/**
- * Created by tianhao on 16/9/25.
- */
-public class ServerMainWithJavaConfig {
-
-    public static void main(String[] args) {
-        ApplicationContext ctx =
-                new AnnotationConfigApplicationContext(RMIServerConfig.class);
-        System.out.println(&quot;已成功发布RMI服务类&quot;);
-    }
-}
-</code></pre>
-
-<h2 id="toc_6">6.客户端调用RMI服务  (JavaConfig方式)</h2>
-
-<p><strong>配置类：</strong></p>
-
-<pre><code class="language-JAVA">package config;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.remoting.rmi.RmiProxyFactoryBean;
-import service.SpitterService;
-
-/**
- * Created by tianhao on 16/9/25.
- */
-public class RMIClientConfig {
-
-    @Bean
-    public RmiProxyFactoryBean spitterService() {
-        RmiProxyFactoryBean rmiProxy = new RmiProxyFactoryBean();
-        rmiProxy.setServiceUrl(&quot;rmi://localhost:1199/SpitterService&quot;);
-        rmiProxy.setServiceInterface(SpitterService.class);
-        return rmiProxy;
-    }
-}
-</code></pre>
-
-<p><strong>调用RMI服务：</strong></p>
-
-<pre><code class="language-JAVA">import config.RMIClientConfig;
-import model.Spitter;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import service.SpitterService;
-
-/**
- * Created by tianhao on 16/9/25.
- */
-public class ClientMainWithJavaConfig {
-
-    public static void main(String[] args) {
-        ApplicationContext ctx = new AnnotationConfigApplicationContext(RMIClientConfig.class);
-        System.out.println(&quot;加载Spring容器,并初始化RMI客户端&quot;);
-        SpitterService spitterService = (SpitterService) ctx.getBean(&quot;spitterService&quot;);
-        Spitter spitter = spitterService.getSpitter(1);
-        System.out.println(&quot;返回结果:&quot; + spitter.toString());
-    }
-}
-</code></pre>
-
-<h2 id="toc_7">7.踩坑总结</h2>
-
-<ol>
-<li>如果要指定网卡，即设置registryHost参数，需使用1中的解决办法，否则异常；</li>
-<li>接口返回的对象要实现 Serializable，虽然仅仅是<code>implements Serializable</code>一下。</li>
-</ol>
-
-<h2 id="toc_8">8.附上项目Gradle配置</h2>
-
-<p><strong>build.gradle</strong></p>
-
-<pre><code class="language-Gradle">apply plugin: &#39;eclipse&#39;
-apply plugin: &#39;war&#39;
-apply plugin: &#39;eclipse-wtp&#39;
-
-dependencies {
-    compile &quot;org.springframework:spring-webmvc:4.3.1.RELEASE&quot;
-    compile &quot;org.springframework:spring-jdbc:4.3.1.RELEASE&quot;
-    compile &quot;org.apache.commons:commons-lang3:3.1&quot;
-
-    testCompile &quot;junit:junit-dep:4.11&quot;
-    testCompile &quot;org.springframework:spring-test:4.3.1.RELEASE&quot;
-    testCompile &quot;org.mockito:mockito-core:1.9.5&quot;
-    testCompile &quot;org.hamcrest:hamcrest-library:1.3&quot;
-}
-
-repositories {
-    maven { url &#39;http://maven.springframework.org/release&#39; }
-    maven { url &#39;http://maven.springframework.org/milestone&#39; }
-    maven { url &#39;http://maven.springframework.org/snapshot&#39; }
-    maven { url &#39;http://download.java.net/maven/2&#39; }
-    mavenCentral()
-}
-
-task wrapper(type: Wrapper) {
-    gradleVersion = &#39;1.8&#39;
-}
-
-war {
-    baseName = &#39;service&#39;
-}
-
-eclipse {
-    wtp {
-        component {
-            contextPath = &#39;service&#39;
-        }
-    }
-}
-</code></pre>
-
-<p><strong>settings.gradle</strong></p>
-
-<pre><code>rootProject.name = &#39;RMI&#39;
 </code></pre>
 
 

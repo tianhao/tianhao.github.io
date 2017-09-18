@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <title>
         
-        Spring Boot 发布 - #(coding X)
+        博客添加了gitment评论功能，要求 Github 登录 - #(coding X)
         
     </title>
 
@@ -207,76 +207,9 @@ http://weibo.com/liemi" title="weibo">Weibo</a>
  <div id="content" class="inner">
 
 	<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
-		<h1 class="title" itemprop="name">Spring Boot 发布</h1>
+		<h1 class="title" itemprop="name">博客添加了gitment评论功能，要求 Github 登录</h1>
 		<div class="entry-content" itemprop="articleBody">
-			<h2 id="toc_0"><em>《Spring Boot实战》笔记 第8章</em></h2>
-
-<h2 id="toc_1">使用 Redis 共享 session</h2>
-
-<p>参考： <a href="http://docs.spring.io/spring-session/docs/current/reference/html5/guides/boot.html">http://docs.spring.io/spring-session/docs/current/reference/html5/guides/boot.html</a></p>
-
-<p>添加依赖</p>
-
-<pre><code>    compile(&#39;org.springframework.boot:spring-boot-starter-redis&#39;)
-    compile(&#39;org.springframework.session:spring-session:1.2.2.RELEASE&#39;)
-</code></pre>
-
-<p>redis 配置，其实单机不需要显式配置redis，但是是跨主机跨应用共享session默认配置就不正确了。</p>
-
-<pre><code>spring:
-    main:
-      banner-mode: off
-    redis:
-      host: redis-server
-      port: 6379
-      database: 15
-</code></pre>
-
-<p>启用Redis共享session，测试发现， 没有这个类也没启用了共享session</p>
-
-<pre><code>@EnableRedisHttpSession
-public class HttpSessionConfig {
-}
-</code></pre>
-
-<p>注意：经测试，前面加上 @ConditionalOnProperty 或 @ConditionalOnExpression 注解并不能阻止启动Redis Session共享：</p>
-
-<pre><code>//@ConditionalOnProperty(name = &quot;session.shared&quot;, havingValue = &quot;true&quot;)
-@ConditionalOnExpression(&quot;&#39;${session.shared}&#39;==&#39;true&#39;&quot;)
-@EnableRedisHttpSession
-public class HttpSessionConfig {
-}
-</code></pre>
-
-<p>经上面测试和观察 /autoconfig RedisSession成功配置条件：<br/>
-<img src="media/14786773151130/14786811492194.jpg" alt=""/></p>
-
-<p>能够阻止redis共享session的是将session存储类型改为其它值：</p>
-
-<pre><code>spring:
-    session:
-      store-type: hash_map
-</code></pre>
-
-<h2 id="toc_2">编译成 War 包供 Tomcat 使用</h2>
-
-<p>build.gradle 文件中将原来的jar换成 war， spring-boot-starter-tomcat要做成providedRuntime，否则于tomcat自有的包冲突， 使用 providedRuntime 后的依赖版被放到lib目录同级目录的lib-private目录下。</p>
-
-<pre><code>apply plugin: &#39;war&#39;
-war {
-    baseName = &#39;readinglist&#39;
-    version = &#39;0.0.1-SNAPSHOT&#39;
-}
-
-dependencies {
-    compile(&#39;org.springframework.boot:spring-boot-starter-web&#39;)
-    providedRuntime &#39;org.springframework.boot:spring-boot-starter-tomcat&#39;
-}
-</code></pre>
-
-<p>providedRuntime 并不影响 java -jar xxx.war 的执行，也就是说 xxx.war 文件内部的lib-private目录包含在java 的扫描路径中,所以嵌入式的tomcat可以运行。Tomcat会将war包解压，但它只会找解压后的lib目录， 不会找lib-private目录，所以不会有嵌入式的tomcat冲突。</p>
-
-<p>因此，<code>providedRuntime &#39;org.springframework.boot:spring-boot-starter-tomcat&#39;</code>使得编译后的war包既能放入 Tomcat 容器中托管给Tomcat执行，也能作为独立的程序执行。</p>
+			<p>但是发现访问速度慢了很多，先观察一段时间，其实gitment不需要博客也在Github</p>
 
 		</div>
 	</article>

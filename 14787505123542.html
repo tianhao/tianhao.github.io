@@ -102,8 +102,7 @@
                         
                         
                         
-                        <a target="_blank" class="weibo" href="http://weibo.com/liemi
-
+                        <a target="_blank" class="weibo" href="
 
 
 
@@ -255,32 +254,21 @@ Spring Boot 会内嵌一个LiveReload服务器，在资源文件发生变化时�
 		</div>
 	</article>
 	<div class="share-comment">
-	 <div id="disqus_thread"></div>
+	 <div id="container"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
 <script>
-(function() { // DON'T EDIT BELOW THIS LINE
-var d = document, s = d.createElement('script');
-s.src = '//tianhaox.disqus.com/embed.js';
-s.setAttribute('data-timestamp', +new Date());
-(d.head || d.body).appendChild(s);
-})();
+var gitment = new Gitment({
+  id: 'location.href',
+  owner: 'tianhao',
+  repo: 'https://github.com/tianhao/blog-comments.git',
+  oauth: {
+    client_id: '3c21ee7aa5726d007022',
+    client_secret: '65d804c3c98c6963eed3ab9c4ee95b54b6655199',
+  },
+})
+gitment.render('container')
 </script>
-<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-<!-- 多说评论框 start -->
-	<div class="ds-thread" ></div>
-<!-- 多说评论框 end -->
-<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
-<script type="text/javascript">
-var duoshuoQuery = {short_name:"tianhaox"};
-	(function() {
-		var ds = document.createElement('script');
-		ds.type = 'text/javascript';ds.async = true;
-		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
-		ds.charset = 'UTF-8';
-		(document.getElementsByTagName('head')[0] 
-		 || document.getElementsByTagName('body')[0]).appendChild(ds);
-	})();
-	</script>
-<!-- 多说公共JS代码 end -->
 
 	  
 

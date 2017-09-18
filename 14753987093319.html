@@ -1,0 +1,612 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>
+        
+        Spring REST API (2) 客户端 - #(coding X)
+        
+    </title>
+
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="atom.xml" rel="alternate" title="#(coding X)" type="application/atom+xml">
+
+    <link href="asset/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+    <link href="asset/stylesheets/font-awesome.min.css" media="screen, projection" rel="stylesheet" type="text/css">
+    <script src="asset/javascripts/jquery.min.js"></script>
+    <script src="asset/highlightjs/highlight.pack.js"></script>
+    <link href="asset/highlightjs/styles/solarized_dark.css" media="screen, projection" rel="stylesheet" type="text/css">
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!--[if lt IE 9]><script src="asset/javascripts/html5.js"></script><![endif]-->
+    <!-- <link href='http://fonts.googleapis.com/css?family=Nunito:400,300,700' rel='stylesheet' type='text/css'> -->
+    <style type="text/css">
+        /* latin */
+        @font-face {
+            font-family: 'Nunito';
+            font-style: normal;
+            font-weight: 300;
+            src: local('Nunito-Light'), url(asset/font/1TiHc9yag0wq3lDO9cw0voX0hVgzZQUfRDuZrPvH3D8.woff2) format('woff2');
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+        }
+        /* latin */
+        @font-face {
+            font-family: 'Nunito';
+            font-style: normal;
+            font-weight: 400;
+            src: local('Nunito-Regular'), url(asset/font/6TbRXKWJjpj6V2v_WyRbMX-_kf6ByYO6CLYdB4HQE-Y.woff2) format('woff2');
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+        }
+        /* latin */
+        @font-face {
+            font-family: 'Nunito';
+            font-style: normal;
+            font-weight: 700;
+            src: local('Nunito-Bold'), url(asset/font/TttUCfJ272GBgSKaOaD7KoX0hVgzZQUfRDuZrPvH3D8.woff2) format('woff2');
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+        }
+    </style>
+
+    <style type="text/css">
+        .container .left-col{ opacity: 1;}
+        #pagenavi a{ font-size: 1.3em;}
+        #pagenavi .next:before{ top: 3px;}
+        #pagenavi .prev:before{ top: 3px;}
+        .container .mid-col .mid-col-container #content .archives .title{ font-size: 1.5em;}
+        .container .mid-col .mid-col-container #content article{ padding: 15px 0px;}
+        #header .subtitle {
+            line-height: 1.2em;
+            padding-top: 8px;
+        }
+        article pre{ background: none; border: none; padding: 0;}
+        article .entry-content{text-align: left;}
+        .share-comment{ padding: 25px 0px; clear: both;}
+        hr{ margin: 20px 0px;border: 0; border-top:solid 1px #ddd;}
+    </style>
+
+</head>
+
+<body>
+<div class="container">
+    <div class="left-col">
+        <div class="intrude-less">
+            <header id="header" class="inner">
+                
+                <div class="profilepic">
+                    <img src="asset/icon.png" style="width:160px;">
+                </div>
+                
+
+                <h1><a href="index.html">#(coding X)</a></h1>
+                <p class="subtitle">写代码，折腾各种好玩的东西！</p>
+                <nav id="main-nav">
+                    <ul class="main">
+                        
+                        <li id=""><a target="_self" href="index.html">Home</a></li>
+                        
+                        <li id=""><a target="_self" href="archives.html">Archives</a></li>
+                        
+                    </ul>
+                </nav>
+
+                <nav id="sub-nav">
+                    <div class="social">
+
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a target="_blank" class="weibo" href="http://weibo.com/liemi
+
+
+
+
+
+http://weibo.com/liemi" title="weibo">Weibo</a>
+                        <a target="_blank" class="twitter" target="_blank" href="https://twitter.com/tianhaox_com" title="Twitter">Twitter</a>
+                        <a target="_blank" class="github" target="_blank" href="https://github.com/tianhao" title="GitHub">GitHub</a>
+                        
+
+                        <a class="rss" href="atom.xml" title="RSS">RSS</a>
+
+                    </div>
+                </nav>
+                <br>
+                <div id="site-categories" class="side-item ">
+                    <div class="side-header">
+                        <h2>Categories</h2>
+                    </div>
+                    <div class="side-content">
+                        <p class="cat-list">
+                            
+                            <a href="Life.html"><strong>Life</strong></a>
+                            
+                            <a href="Spring.html"><strong>Spring</strong></a>
+                            
+                            <a href="Spring%20Boot.html"><strong>Spring Boot</strong></a>
+                            
+                        </p>
+                    </div>
+                </div>
+								<br>
+                <div id="site-categories" class="side-item">
+                    <div class="side-header">
+                        <h2>Recent Posts</h2>
+                    </div>
+                    <div class="side-content">
+                        <ul class="posts-list">
+                            
+                            
+                            <li class="post">
+                                <a href="14787505123542.html">SpringBoot 开发工具</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14786773151130.html">Spring Boot 发布</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14786335106268.html">Spring Boot 深入Actuator</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14785948397032.html">Spring Boot 自定义配置</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14785852868633.html">Spring Boot 开发第一个应用程序</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14785139214429.html">Spring Boot 入门：安装和构建</a>
+                            </li>
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                        </ul>
+                    </div>
+                </div>
+            </header>
+        </div> <!-- intrude-less -->
+    </div> <!-- left-col -->
+
+    <div class="mid-col">
+        <div class="mid-col-container">
+ <div id="content" class="inner">
+
+	<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+		<h1 class="title" itemprop="name">Spring REST API (2) 客户端</h1>
+		<div class="entry-content" itemprop="articleBody">
+			<p><em>——《Spring实战》笔记 第16章</em></p>
+
+<h2 id="toc_0">传统的 HttpClient</h2>
+
+<h2 id="toc_1">RestTemplate</h2>
+
+<pre><code class="language-JAVA">package org.springframework.web.client;
+
+public class RestTemplate extends InterceptingHttpAccessor implements RestOperations {
+...
+}
+</code></pre>
+
+<p>RestTemplate定义了11个独立的操作：</p>
+
+<table>
+<thead>
+<tr>
+<th> 方法</th>
+<th>描述</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>delete()</td>
+<td>在特定的URL上对资源指定 HTTP DELETE 操作</td>
+</tr>
+<tr>
+<td>exchange()</td>
+<td>在URL上执行 HTTP 方法，返回包含对象的 ResponseEntity，这个对象是从相应提中映射得到的</td>
+</tr>
+<tr>
+<td>execute()</td>
+<td>在 URL 上执行特定的 HTTP 方法，返回一个从响应体映射得到的对象</td>
+</tr>
+<tr>
+<td>getForEntity()</td>
+<td>发送一个 HTTP GET 请求，返回的 ResponseEntity 包含了响应体所映射成的对象</td>
+</tr>
+<tr>
+<td>getForObject()</td>
+<td>发送一个 HTTP GET 请求，返回的请求体将映射成一个对象</td>
+</tr>
+<tr>
+<td>headForHeaders()</td>
+<td>发送一个 HTTP HEAD 请求，返回包含特定资源 URL 的 HTTP 头</td>
+</tr>
+<tr>
+<td>optionsForAllow()</td>
+<td>发送一个 HTTP OPTIONS 请求，返回特定的 URL 的 Allow 头信息</td>
+</tr>
+<tr>
+<td>postForEntity()</td>
+<td>POST 数据到一个 URL，返回一个对象的 ResponseEntity，这个对象是从响应体映射得到的</td>
+</tr>
+<tr>
+<td>postForLocation()</td>
+<td>POST 数据到一个URL，返回新创建资源的URL</td>
+</tr>
+<tr>
+<td>postForObject()</td>
+<td>POST 数据到一个URL，返回根据响应体匹配形成的对象</td>
+</tr>
+<tr>
+<td>put()</td>
+<td>PUT 资源到特定的 URL</td>
+</tr>
+</tbody>
+</table>
+
+<p>这些操作都提供了 3 种形式的重载方法：</p>
+
+<ol>
+<li>一个使用 java.net.URI 作为 URL 格式，不支持参数化 URL；</li>
+<li>一个使用 String 作为URL 格式，并使用 Map 指明 URL 参数；</li>
+<li>一个使用 String 作为 URL 格式，并使用可变参数列表指明 URL 参数；</li>
+</ol>
+
+<h3 id="toc_2">GET 资源 getForObject、getForEntity</h3>
+
+<p>从 org.springframework.web.client.RestTemplate 类中可以看到有以下获取 GET 资源的方法方法：</p>
+
+<pre><code>&lt;T&gt; T getForObject(String url, Class&lt;T&gt; responseType, Object... uriVariables) throws RestClientException;
+&lt;T&gt; T getForObject(String url, Class&lt;T&gt; responseType, Map&lt;String, ?&gt; uriVariables) throws RestClientException;
+&lt;T&gt; T getForObject(URI url, Class&lt;T&gt; responseType) throws RestClientException;
+
+&lt;T&gt; ResponseEntity&lt;T&gt; getForEntity(String url, Class&lt;T&gt; responseType, Object... uriVariables) throws RestClientException;
+&lt;T&gt; ResponseEntity&lt;T&gt; getForEntity(String url, Class&lt;T&gt; responseType, Map&lt;String, ?&gt; uriVariables) throws RestClientException;
+&lt;T&gt; ResponseEntity&lt;T&gt; getForEntity(URI url, Class&lt;T&gt; responseType) throws RestClientException;
+</code></pre>
+
+<p>可以看出这种 getForObject、getForEntity 方法的3个重载方法，<strong>getForObject 和 getForEntity 方法的区别是：getForObject 直接获取资源，返回的结果就是要获取的对象，丢弃 HttpStatus 和 Headers 信息，而 getForEntity 方法完整的保留了这些信息，这些信息包括返回的对象全部放在一个 ResponseEntity 对象中，使用这个方法可以做更多的事情。</strong>，通过代码<code>public class ResponseEntity&lt;T&gt; extends HttpEntity&lt;T&gt;</code>可以看到 ResponseEntity 其实是 HttpEntity 的子类，通过<code>getHttpStatus()</code>可以获取 HTTP 返回码, 通过<code>getHeaders()</code> 方法可以获取返回头，通过 <code>getBody()</code>可以获取返回对象。</p>
+
+<h4 id="toc_3">关于返回头信息 HttpHeaders</h4>
+
+<ol>
+<li>通过 response.getHeaders()可以获取到 返回头信息对象 HttpHeaders;</li>
+<li>HttpHeaders 类提供了2类方法：getXXX()和 getFirstXXX(),XXX代表头信息关键字，前者返回列表，后者返回列表中的第一个；</li>
+<li>HttpHeaders包含的信息通过类中枚举值定义就可以看出来：</li>
+</ol>
+
+<pre><code>    private static final long serialVersionUID = -8578554704772377436L;
+
+    private static final String ACCEPT = &quot;Accept&quot;;
+
+    private static final String ACCEPT_CHARSET = &quot;Accept-Charset&quot;;
+
+    private static final String ALLOW = &quot;Allow&quot;;
+
+    private static final String CACHE_CONTROL = &quot;Cache-Control&quot;;
+
+    private static final String CONNECTION = &quot;Connection&quot;;
+
+    private static final String CONTENT_DISPOSITION = &quot;Content-Disposition&quot;;
+
+    private static final String CONTENT_LENGTH = &quot;Content-Length&quot;;
+
+    private static final String CONTENT_TYPE = &quot;Content-Type&quot;;
+
+    private static final String DATE = &quot;Date&quot;;
+
+    private static final String ETAG = &quot;ETag&quot;;
+
+    private static final String EXPIRES = &quot;Expires&quot;;
+
+    private static final String IF_MODIFIED_SINCE = &quot;If-Modified-Since&quot;;
+
+    private static final String IF_NONE_MATCH = &quot;If-None-Match&quot;;
+
+    private static final String LAST_MODIFIED = &quot;Last-Modified&quot;;
+
+    private static final String LOCATION = &quot;Location&quot;;
+
+    private static final String ORIGIN = &quot;Origin&quot;;
+
+    private static final String PRAGMA = &quot;Pragma&quot;;
+
+    private static final String UPGRADE = &quot;Upgrade&quot;;
+</code></pre>
+
+<h3 id="toc_4">PUT 资源</h3>
+
+<ol>
+<li>以 put 方式发送请求；</li>
+<li>注意返回值是 void，而不是对象，相当于无法获取服务端相应的相关 Header 信息。</li>
+</ol>
+
+<pre><code>    void put(String url, Object request, Object... uriVariables) throws RestClientException;
+    void put(String url, Object request, Map&lt;String, ?&gt; uriVariables) throws RestClientException;
+    void put(URI url, Object request) throws RestClientException;
+</code></pre>
+
+<h3 id="toc_5">DELETE 资源</h3>
+
+<ol>
+<li>以 put 方式发送请求；</li>
+<li>注意返回值是 void，而不是对象，相当于无法获取服务端相应的相关 Header 信息。</li>
+</ol>
+
+<pre><code>    void delete(String url, Object request, Object... uriVariables) throws RestClientException;
+    void delete(String url, Object request, Map&lt;String, ?&gt; uriVariables) throws RestClientException;
+    void delete(URI url, Object request) throws RestClientException;
+</code></pre>
+
+<h3 id="toc_6">POST 资源</h3>
+
+<ol>
+<li>post方法跟 get 方法一样，但是比 get 方法多了3个 postForLocation方法；</li>
+<li>postForLocation 方法会忽略掉返回的其它信息，只获取返回 Headers的 Location 信息，类型为 URI;</li>
+<li>postForLocation 方法对服务端有要求，在 post 资源成功后要往返回的头部设置 Location 信息。</li>
+</ol>
+
+<pre><code>&lt;T&gt; T postForObject(String url, Class&lt;T&gt; responseType, Object... uriVariables) throws RestClientException;
+&lt;T&gt; T postForObject(String url, Class&lt;T&gt; responseType, Map&lt;String, ?&gt; uriVariables) throws RestClientException;
+&lt;T&gt; T postForObject(URI url, Class&lt;T&gt; responseType) throws RestClientException;
+
+&lt;T&gt; ResponseEntity&lt;T&gt; postForEntity(String url, Class&lt;T&gt; responseType, Object... uriVariables) throws RestClientException;
+&lt;T&gt; ResponseEntity&lt;T&gt; postForEntity(String url, Class&lt;T&gt; responseType, Map&lt;String, ?&gt; uriVariables) throws RestClientException;
+&lt;T&gt; ResponseEntity&lt;T&gt; postForEntity(URI url, Class&lt;T&gt; responseType) throws RestClientException;
+
+URI postForLocation(String url, Object request, Object... uriVariables) throws RestClientException;
+URI postForLocation(String url, Object request, Map&lt;String, ?&gt; uriVariables) throws RestClientException;
+URI postForLocation(URI url, Object request) throws RestClientException;
+</code></pre>
+
+<h3 id="toc_7">交换资源</h3>
+
+<p>exchange 方法是唯一能够在发送给服务器的请求中设置头信息的方法。</p>
+
+<pre><code class="language-JAVA">&lt;T&gt; ResponseEntity&lt;T&gt; exchange(String url, HttpMethod method, HttpEntity&lt;?&gt; requestEntity,
+            Class&lt;T&gt; responseType, Object... uriVariables) throws RestClientException;
+&lt;T&gt; ResponseEntity&lt;T&gt; exchange(String url, HttpMethod method, HttpEntity&lt;?&gt; requestEntity,
+            Class&lt;T&gt; responseType, Map&lt;String, ?&gt; uriVariables) throws RestClientException;
+&lt;T&gt; ResponseEntity&lt;T&gt; exchange(URI url, HttpMethod method, HttpEntity&lt;?&gt; requestEntity,
+            Class&lt;T&gt; responseType) throws RestClientException;
+&lt;T&gt; ResponseEntity&lt;T&gt; exchange(String url,HttpMethod method, HttpEntity&lt;?&gt; requestEntity,
+            ParameterizedTypeReference&lt;T&gt; responseType, Object... uriVariables) throws RestClientException;
+&lt;T&gt; ResponseEntity&lt;T&gt; exchange(String url, HttpMethod method, HttpEntity&lt;?&gt; requestEntity,
+            ParameterizedTypeReference&lt;T&gt; responseType, Map&lt;String, ?&gt; uriVariables) throws RestClientException;
+&lt;T&gt; ResponseEntity&lt;T&gt; exchange(URI url, HttpMethod method, HttpEntity&lt;?&gt; requestEntity,
+            ParameterizedTypeReference&lt;T&gt; responseType) throws RestClientException;
+</code></pre>
+
+<h3 id="toc_8">注意事项</h3>
+
+<ol>
+<li>发送请求的 Content-Type以及发送对象的形式怎么设置的？</li>
+</ol>
+
+<h2 id="toc_9">使用用例：</h2>
+
+<pre><code class="language-JAVA">package spittr.web;
+
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
+import spittr.model.Spitter;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Created by tianhao on 16/10/2.
+ */
+public class SpringHttpClient {
+
+    public Spitter getSpitterForObject1(Long id) {
+        RestTemplate rest = new RestTemplate();
+        return rest.getForObject(&quot;http://localhost:8080/getSpitter/{id}&quot;,Spitter.class,id);
+    }
+
+    public Spitter getSpitterForObject2(Long id) {
+        RestTemplate rest = new RestTemplate();
+        Map map = new HashMap&lt;&gt;();
+        map.put(&quot;id&quot;, id);
+        return rest.getForObject(&quot;http://localhost:8080/getSpitter/{id}&quot;,
+                Spitter.class,
+                map);
+    }
+
+    public Spitter getSpitterForObject3(Long id) {
+        try {
+            RestTemplate rest = new RestTemplate();
+            URI uri = new URI(&quot;http://localhost:8080/getSpitter/&quot;+ id);
+            return rest.getForObject(uri,Spitter.class);
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Spitter getSpitterForEntity1(Long id) {
+        RestTemplate rest = new RestTemplate();
+        ResponseEntity&lt;Spitter&gt; response = rest.getForEntity(&quot;http://localhost:8080/getSpitter/{id}&quot;,Spitter.class,id);
+        if (response.getStatusCode() == HttpStatus.NOT_MODIFIED){
+            throw new NotModifedException();
+        }
+        return response.getBody();
+    }
+
+    public Spitter getSpitterForEntity2(Long id) {
+        RestTemplate rest = new RestTemplate();
+        Map map = new HashMap&lt;&gt;();
+        map.put(&quot;id&quot;, id);
+        ResponseEntity&lt;Spitter&gt; response= rest.getForEntity(&quot;http://localhost:8080/getSpitter/{id}&quot;,
+                Spitter.class,
+                map);
+        return response.getBody();
+    }
+
+    public Spitter getSpitterForEntity3(Long id) {
+        try {
+            RestTemplate rest = new RestTemplate();
+            URI uri = new URI(&quot;http://localhost:8080/getSpitter/&quot;+ id);
+            ResponseEntity&lt;Spitter&gt; response = rest.getForEntity(uri,Spitter.class);
+            return response.getBody();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void putSpitter1(){
+        RestTemplate rest = new RestTemplate();
+        rest.put(&quot;http://localhost:8080/putSpitter/{id}&quot;, new Spitter(), 1);
+    }
+
+    public void putSpitter2(){
+        RestTemplate rest = new RestTemplate();
+        Map m = new HashMap();
+        m.put(&quot;id&quot;, 2);
+        rest.put(&quot;http://localhost:8080/putSpitter/{id}&quot;, new Spitter(), m);
+    }
+
+    public void putSpitter3(){
+        RestTemplate rest = new RestTemplate();
+        rest.put(URI.create(&quot;http://localhost:8080/putSpitter/&quot;+3), new Spitter());
+    }
+
+    public Spitter exchangeGetSpitter1(){
+        RestTemplate rest = new RestTemplate();
+        ResponseEntity&lt;Spitter&gt; response = rest.exchange(&quot;http://localhost:8080/getSpitter/{id}&quot;, HttpMethod.GET,null,Spitter.class,1);
+        return response.getBody();
+    }
+
+    public Spitter exchangePostSpitter(){
+        RestTemplate rest = new RestTemplate();
+        MultiValueMap&lt;String,String&gt; headers = new LinkedMultiValueMap&lt;&gt;();
+        headers.add(&quot;Accept&quot;, &quot;application/json&quot;);
+        headers.add(&quot;Content-Type&quot;, &quot;application/json&quot;);
+        HttpEntity&lt;Object&gt; requestEntity = new HttpEntity&lt;Object&gt;(new Spitter(), headers);
+        ResponseEntity&lt;Spitter&gt; response = rest.exchange(&quot;http://localhost:8080/consumesJsonOrXmlSpitter&quot;, HttpMethod.POST,requestEntity,Spitter.class);
+        return response.getBody();
+    }
+
+    public static void main(String[] args) {
+        SpringHttpClient client = new SpringHttpClient();
+        System.out.println(&quot;==== put ====&quot;);
+        client.putSpitter1();
+        client.putSpitter2();
+        client.putSpitter3();
+        System.out.println(&quot;==== getSpitterForObjectX ====&quot;);
+        Spitter s = client.getSpitterForObject1(1L);
+        System.out.println(s);
+        s = client.getSpitterForObject2(2L);
+        System.out.println(s);
+        s = client.getSpitterForObject3(3L);
+        System.out.println(s);
+        System.out.println(&quot;==== getSpitterForEntityX ====&quot;);
+        s = client.getSpitterForEntity1(1L);
+        System.out.println(s);
+        s = client.getSpitterForEntity2(2L);
+        System.out.println(s);
+        s = client.getSpitterForEntity3(3L);
+        System.out.println(s);
+        System.out.println(&quot;==== exchange ====&quot;);
+        s = client.exchangeGetSpitter1();
+        System.out.println(s);
+        s = client.exchangePostSpitter();
+        System.out.println(s);
+        return;
+    }
+}
+</code></pre>
+
+		</div>
+	</article>
+	<div class="share-comment">
+	 <div id="disqus_thread"></div>
+<script>
+(function() { // DON'T EDIT BELOW THIS LINE
+var d = document, s = d.createElement('script');
+s.src = '//tianhaox.disqus.com/embed.js';
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<!-- 多说评论框 start -->
+	<div class="ds-thread" ></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"tianhaox"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+
+	  
+
+	  
+
+	</div>
+</div>        </div>
+			<footer id="footer" class="inner">Copyright &copy; 2014
+Powered by <a target="_blank" href="http://www.mweb.im">MWeb</a> &nbsp;&nbsp; 
+Theme by <a href="http://shashankmehta.in/archive/2012/greyshade.html">Shashank Mehta</a>
+      </footer>
+		</div>
+	</div>
+
+  
+    
+<script src="asset/chart/all-min.js"></script><script type="text/javascript">$(function(){    var mwebii=0;    var mwebChartEleId = 'mweb-chart-ele-';    $('pre>code').each(function(){        mwebii++;        var eleiid = mwebChartEleId+mwebii;        if($(this).hasClass('language-sequence')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = Diagram.parse($(this).text());            diagram.drawSVG(eleiid,{theme: 'simple'});        }else if($(this).hasClass('language-flow')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = flowchart.parse($(this).text());            diagram.drawSVG(eleiid);        }    });});</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
+
+</body>
+</html>

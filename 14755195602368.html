@@ -1,0 +1,582 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>
+        
+        Spring消息(2) AMQP - #(coding X)
+        
+    </title>
+
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="atom.xml" rel="alternate" title="#(coding X)" type="application/atom+xml">
+
+    <link href="asset/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+    <link href="asset/stylesheets/font-awesome.min.css" media="screen, projection" rel="stylesheet" type="text/css">
+    <script src="asset/javascripts/jquery.min.js"></script>
+    <script src="asset/highlightjs/highlight.pack.js"></script>
+    <link href="asset/highlightjs/styles/solarized_dark.css" media="screen, projection" rel="stylesheet" type="text/css">
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!--[if lt IE 9]><script src="asset/javascripts/html5.js"></script><![endif]-->
+    <!-- <link href='http://fonts.googleapis.com/css?family=Nunito:400,300,700' rel='stylesheet' type='text/css'> -->
+    <style type="text/css">
+        /* latin */
+        @font-face {
+            font-family: 'Nunito';
+            font-style: normal;
+            font-weight: 300;
+            src: local('Nunito-Light'), url(asset/font/1TiHc9yag0wq3lDO9cw0voX0hVgzZQUfRDuZrPvH3D8.woff2) format('woff2');
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+        }
+        /* latin */
+        @font-face {
+            font-family: 'Nunito';
+            font-style: normal;
+            font-weight: 400;
+            src: local('Nunito-Regular'), url(asset/font/6TbRXKWJjpj6V2v_WyRbMX-_kf6ByYO6CLYdB4HQE-Y.woff2) format('woff2');
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+        }
+        /* latin */
+        @font-face {
+            font-family: 'Nunito';
+            font-style: normal;
+            font-weight: 700;
+            src: local('Nunito-Bold'), url(asset/font/TttUCfJ272GBgSKaOaD7KoX0hVgzZQUfRDuZrPvH3D8.woff2) format('woff2');
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+        }
+    </style>
+
+    <style type="text/css">
+        .container .left-col{ opacity: 1;}
+        #pagenavi a{ font-size: 1.3em;}
+        #pagenavi .next:before{ top: 3px;}
+        #pagenavi .prev:before{ top: 3px;}
+        .container .mid-col .mid-col-container #content .archives .title{ font-size: 1.5em;}
+        .container .mid-col .mid-col-container #content article{ padding: 15px 0px;}
+        #header .subtitle {
+            line-height: 1.2em;
+            padding-top: 8px;
+        }
+        article pre{ background: none; border: none; padding: 0;}
+        article .entry-content{text-align: left;}
+        .share-comment{ padding: 25px 0px; clear: both;}
+        hr{ margin: 20px 0px;border: 0; border-top:solid 1px #ddd;}
+    </style>
+
+</head>
+
+<body>
+<div class="container">
+    <div class="left-col">
+        <div class="intrude-less">
+            <header id="header" class="inner">
+                
+                <div class="profilepic">
+                    <img src="asset/icon.png" style="width:160px;">
+                </div>
+                
+
+                <h1><a href="index.html">#(coding X)</a></h1>
+                <p class="subtitle">写代码，折腾各种好玩的东西！</p>
+                <nav id="main-nav">
+                    <ul class="main">
+                        
+                        <li id=""><a target="_self" href="index.html">Home</a></li>
+                        
+                        <li id=""><a target="_self" href="archives.html">Archives</a></li>
+                        
+                    </ul>
+                </nav>
+
+                <nav id="sub-nav">
+                    <div class="social">
+
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a target="_blank" class="weibo" href="http://weibo.com/liemi
+
+
+
+
+
+http://weibo.com/liemi" title="weibo">Weibo</a>
+                        <a target="_blank" class="twitter" target="_blank" href="https://twitter.com/tianhaox_com" title="Twitter">Twitter</a>
+                        <a target="_blank" class="github" target="_blank" href="https://github.com/tianhao" title="GitHub">GitHub</a>
+                        
+
+                        <a class="rss" href="atom.xml" title="RSS">RSS</a>
+
+                    </div>
+                </nav>
+                <br>
+                <div id="site-categories" class="side-item ">
+                    <div class="side-header">
+                        <h2>Categories</h2>
+                    </div>
+                    <div class="side-content">
+                        <p class="cat-list">
+                            
+                            <a href="Life.html"><strong>Life</strong></a>
+                            
+                            <a href="Spring.html"><strong>Spring</strong></a>
+                            
+                            <a href="Spring%20Boot.html"><strong>Spring Boot</strong></a>
+                            
+                        </p>
+                    </div>
+                </div>
+								<br>
+                <div id="site-categories" class="side-item">
+                    <div class="side-header">
+                        <h2>Recent Posts</h2>
+                    </div>
+                    <div class="side-content">
+                        <ul class="posts-list">
+                            
+                            
+                            <li class="post">
+                                <a href="14787505123542.html">SpringBoot 开发工具</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14786773151130.html">Spring Boot 发布</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14786335106268.html">Spring Boot 深入Actuator</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14785948397032.html">Spring Boot 自定义配置</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14785852868633.html">Spring Boot 开发第一个应用程序</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14785139214429.html">Spring Boot 入门：安装和构建</a>
+                            </li>
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                        </ul>
+                    </div>
+                </div>
+            </header>
+        </div> <!-- intrude-less -->
+    </div> <!-- left-col -->
+
+    <div class="mid-col">
+        <div class="mid-col-container">
+ <div id="content" class="inner">
+
+	<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+		<h1 class="title" itemprop="name">Spring消息(2) AMQP</h1>
+		<div class="entry-content" itemprop="articleBody">
+			<p><em>——《Spring实战》笔记 第17章</em></p>
+
+<h2 id="toc_0">安装 RabbitMQ</h2>
+
+<pre><code>brew install rabbitmq
+rabbitmq-server
+brew services start rabbitmq
+</code></pre>
+
+<p>WEB管理页面 <a href="http://localhost:15672">http://localhost:15672</a>  用户名/密码: guest/guest</p>
+
+<h2 id="toc_1">基本配置</h2>
+
+<pre><code class="language-XML">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans:beans xmlns=&quot;http://www.springframework.org/schema/rabbit&quot;
+             xmlns:beans=&quot;http://www.springframework.org/schema/beans&quot;
+             xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+             xsi:schemaLocation=&quot;http://www.springframework.org/schema/rabbit
+             http://www.springframework.org/schema/rabbit/spring-rabbit.xsd
+             http://www.springframework.org/schema/beans
+             http://www.springframework.org/schema/beans/spring-beans.xsd&quot;&gt;
+
+    &lt;!--========= 连接工厂配置.开始 =========--&gt;
+    &lt;!-- 最简配置,全部使用默认值 --&gt;
+    &lt;connection-factory id=&quot;connectionFactory&quot; /&gt;
+    &lt;!-- or --&gt;
+    &lt;!-- 完全配置 --&gt;
+    &lt;connection-factory id=&quot;connectionFactory&quot;
+                        host=&quot;${rabbitmq.host}&quot;
+                        port=&quot;${rabbitmq.port}&quot;
+                        username=&quot;${rabbitmq.username}&quot;
+                        password=&quot;${rabbitmq.password}&quot; /&gt;
+    &lt;!--========= 连接工厂配置.结束 =========--&gt;
+
+
+    &lt;!-- admin --&gt;
+    &lt;admin connection-factory=&quot;connectionFactory&quot;/&gt;
+
+    &lt;!--========= 消息配置.开始 =========--&gt;
+    &lt;!-- 单队列配置--&gt;
+    &lt;queue id=&quot;spittleAlertQueue&quot; name=&quot;spittle.alerts&quot; /&gt;
+    &lt;fanout-exchange name=&quot;spittle.alert.exchange&quot;&gt;
+        &lt;bindings&gt;
+            &lt;binding queue=&quot;spittle.alerts&quot; /&gt;
+        &lt;/bindings&gt;
+    &lt;/fanout-exchange&gt;
+
+    &lt;!-- or --&gt;
+    
+    &lt;!-- 复合配置 --&gt;
+    &lt;queue name=&quot;spittle.alert.queue.1&quot; /&gt;
+    &lt;queue name=&quot;spittle.alert.queue.2&quot; /&gt;
+    &lt;queue name=&quot;spittle.alert.queue.3&quot; /&gt;
+    &lt;fanout-exchange name=&quot;spittle.fanout&quot;&gt;
+        &lt;bindings&gt;
+            &lt;binding queue=&quot;spittle.alert.queue.1&quot; /&gt;
+            &lt;binding queue=&quot;spittle.alert.queue.2&quot; /&gt;
+            &lt;binding queue=&quot;spittle.alert.queue.3&quot; /&gt;
+        &lt;/bindings&gt;
+    &lt;/fanout-exchange&gt;
+    &lt;!--========= 消息配置.结束 =========--&gt;
+
+&lt;/beans:beans&gt;
+</code></pre>
+
+<h2 id="toc_2">生产者 和 消费者</h2>
+
+<p>注意 RabbitTemplate 的 convertAndSend() 、send()、receive()、receiveAndConvert()都不会堵塞。所以跟 JMS 不一样。。。</p>
+
+<h3 id="toc_3">生产者 API, convertAndSend() 和 send()</h3>
+
+<p>convertAndSend() 的几个重载方法：</p>
+
+<pre><code class="language-JAVA">    // 发送给默认 exchange 的默认 routing-key
+    public void convertAndSend(Object object) throws AmqpException;
+
+    // 发送给默认 exchange 的指定 routing-key
+    public void convertAndSend(String routingKey, final Object object) throws AmqpException;
+
+    // 发送给指定 exchange 的指定 routing-key
+    public void convertAndSend(String exchange, String routingKey, final Object object) throws AmqpException;
+
+    // 发送给默认 exchange 的默认 routing-key，发送前用messagePostProcessor处理消息
+    public void convertAndSend(Object message, MessagePostProcessor messagePostProcessor) throws AmqpException;
+
+    // 发送给默认 exchange 的指定 routing-key，发送前用messagePostProcessor处理消息
+    public void convertAndSend(String routingKey, Object message, MessagePostProcessor messagePostProcessor)
+            throws AmqpException;
+            
+    // 发送给指定 exchange 的指定 routing-key，发送前用messagePostProcessor处理消息
+    public void convertAndSend(String exchange, String routingKey, final Object message,
+            final MessagePostProcessor messagePostProcessor) throws AmqpException;
+</code></pre>
+
+<p>其实 RabbitTemplate 也有 send()方法，只是调用这些方法前要先将对象转换为 Message 类型，所以一般不用他们：</p>
+
+<pre><code class="language-JAVA">    void send(Message message) throws AmqpException;
+    void send(String routingKey, Message message) throws AmqpException;
+    void send(String exchange, String routingKey, Message message) throws AmqpException;
+</code></pre>
+
+<h3 id="toc_4">消费者 API，receive() 和 receiveAndConvert()</h3>
+
+<pre><code class="language-JAVA">    // 从默认队列中读取消息，返回 message 或 null 如果消息为空；
+    Message receive() throws AmqpException;
+    // 从指定队列中读取消息，返回 message 或 null 如果消息为空；
+    Message receive(String queueName) throws AmqpException;
+    // 从默认队列中读取消息，返回指定类型的对象 或 null 如果消息为空；
+    Object receiveAndConvert() throws AmqpException;
+    // 从指定队列中读取消息，返回指定类型的对象 或 null 如果消息为空；
+    Object receiveAndConvert(String queueName) throws AmqpException;
+</code></pre>
+
+<h2 id="toc_5">消费者</h2>
+
+<pre><code class="language-JAVA">    // 从默认队列中读取消息，返回 message 或 null 如果消息为空；
+    Message receive() throws AmqpException;
+    // 从指定队列中读取消息，返回 message 或 null 如果消息为空；
+    Message receive(String queueName) throws AmqpException;
+    // 从默认队列中读取消息，返回指定类型的对象 或 null 如果消息为空；
+    Object receiveAndConvert() throws AmqpException;
+    // 从指定队列中读取消息，返回指定类型的对象 或 null 如果消息为空；
+    Object receiveAndConvert(String queueName) throws AmqpException;
+</code></pre>
+
+<pre><code class="language-JAVA">Spittle spittle = (Spittle) rabbit.receiveAndConvert(&quot;spittle.alert.queue&quot;);
+</code></pre>
+
+<h3 id="toc_6">示例</h3>
+
+<pre><code class="language-XML">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans:beans xmlns:beans=&quot;http://www.springframework.org/schema/beans&quot;
+             xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+             xmlns=&quot;http://www.springframework.org/schema/rabbit&quot;
+             xsi:schemaLocation=&quot;http://www.springframework.org/schema/rabbit
+             http://www.springframework.org/schema/rabbit/spring-rabbit-1.0.xsd
+             http://www.springframework.org/schema/beans
+             http://www.springframework.org/schema/beans/spring-beans.xsd&quot;&gt;
+
+    &lt;!-- 导入基本配置 --&gt;
+    &lt;beans:import resource=&quot;amqp-shared.xml&quot; /&gt;
+
+    &lt;!--========= RabbitTemplate 配置.开始 =========--&gt;
+
+    &lt;!-- 未设置默认 exchnage 和 routing-key --&gt;
+    &lt;template id=&quot;rabbitTemplate&quot;
+              connection-factory=&quot;connectionFactory&quot; /&gt;
+
+    &lt;!-- or --&gt;
+
+    &lt;!-- 设置了默认 routing-key --&gt;
+    &lt;template id=&quot;rabbitTemplate&quot;
+              connection-factory=&quot;connectionFactory&quot;
+              routing-key=&quot;spittle.alerts&quot; /&gt;
+
+    &lt;!-- or --&gt;
+
+    &lt;!-- 设置了默认 exchange 和 routing-key --&gt;
+    &lt;template id=&quot;rabbitTemplate&quot;
+              connection-factory=&quot;connectionFactory&quot;
+              exchange=&quot;spittle.alert.exchange&quot;
+              routing-key=&quot;spittle.alerts&quot; /&gt;
+    &lt;!--========= RabbitTemplate 配置.结束 =========--&gt;
+
+&lt;/beans:beans&gt;
+</code></pre>
+
+<p>调用 RabbitTemplate 接口收发消息</p>
+
+<pre><code class="language-JAVA">package spittr.alerts;
+
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import spittr.domain.Spittle;
+
+public class AlertServiceImpl implements AlertService {
+
+    @Autowired
+    private RabbitTemplate rabbit;
+
+    public AlertServiceImpl(RabbitTemplate rabbit) {
+        this.rabbit = rabbit;
+    }
+
+    public void sendSpittleAlert(Spittle spittle) {
+        rabbit.convertAndSend(&quot;spittle.alert.exchange&quot;,
+                &quot;spittle.alerts&quot;,
+                spittle);
+    }
+
+    @Override
+    public Spittle receiveSpittleAlert() {
+        return (Spittle) rabbit.receiveAndConvert(&quot;spittle.alerts&quot;);
+    }
+}
+</code></pre>
+
+<p>启动生产者</p>
+
+<pre><code class="language-JAVA">package spittr.message;
+
+import java.util.Date;
+
+import org.junit.Ignore;
+import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import spittr.domain.Spittle;
+
+@Ignore
+public class ProducerMain {
+
+  public static void main(String[] args) throws Exception {
+    
+    ApplicationContext context = new ClassPathXmlApplicationContext(&quot;META-INF/spring/amqp-producer.xml&quot;);
+    AmqpTemplate template = (AmqpTemplate) context.getBean(&quot;rabbitTemplate&quot;);
+    
+    for (int i=0; i &lt; 20; i++) {
+      System.out.println(&quot;Sending message #&quot; + i);
+      Spittle spittle = new Spittle((long) i, null, &quot;Hello world (&quot; + i + &quot;)&quot;, new Date());
+      template.convertAndSend(spittle);
+      Thread.sleep(5000);
+    }
+    
+    System.out.println(&quot;Done!&quot;);
+    
+  }
+
+}
+</code></pre>
+
+<p>启动消费者</p>
+
+<pre><code>package spittr.message;
+
+import org.junit.Ignore;
+import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import spittr.alerts.AlertService;
+import spittr.alerts.AlertServiceImpl;
+import spittr.domain.Spittle;
+
+@Ignore
+public class ConsumerMain {
+
+    public static void main(String[] args) throws Exception {
+        ApplicationContext context = new ClassPathXmlApplicationContext(&quot;META-INF/spring/amqp-producer.xml&quot;);
+        RabbitTemplate template = (RabbitTemplate) context.getBean(&quot;rabbitTemplate&quot;);
+
+        AlertService alertService = new AlertServiceImpl(template);
+        while (true){
+            Spittle s = alertService.receiveSpittleAlert();
+            System.out.println(s);
+            Thread.sleep(5000);
+        }
+    }
+
+}
+</code></pre>
+
+<h2 id="toc_7">消息监听</h2>
+
+<pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans:beans xmlns=&quot;http://www.springframework.org/schema/rabbit&quot;
+             xmlns:beans=&quot;http://www.springframework.org/schema/beans&quot;
+             xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+             xsi:schemaLocation=&quot;http://www.springframework.org/schema/rabbit
+             http://www.springframework.org/schema/rabbit/spring-rabbit-1.0.xsd
+             http://www.springframework.org/schema/beans
+             http://www.springframework.org/schema/beans/spring-beans.xsd&quot;&gt;
+
+    &lt;!-- 导入基本配置 --&gt;
+    &lt;beans:import resource=&quot;amqp-shared.xml&quot; /&gt;
+
+    &lt;!--========= 监听配置.开始 =========--&gt;
+    &lt;listener-container connection-factory=&quot;connectionFactory&quot; &gt;
+        &lt;listener ref=&quot;spittleListener&quot;
+                  method=&quot;handleSpittleAlert&quot;
+                  queues=&quot;spittleAlertQueue&quot; /&gt;
+    &lt;/listener-container&gt;
+
+    &lt;beans:bean id=&quot;spittleListener&quot; class=&quot;spittr.alerts.SpittleAlertHandler&quot; /&gt;
+    &lt;!--========= 监听配置.结束 =========--&gt;
+
+&lt;/beans:beans&gt;
+</code></pre>
+
+<p>监听处理者：</p>
+
+<pre><code>package spittr.alerts;
+
+import spittr.domain.Spittle;
+
+public class SpittleAlertHandler {
+  
+  public void handleSpittleAlert(Spittle spittle) {
+    System.out.println(spittle.getMessage());
+  }
+
+}
+</code></pre>
+
+<p>发起监听：</p>
+
+<pre><code>package spittr.message;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class ConsumerMain {
+
+  public static void main(String[] args) {
+    ApplicationContext context = new ClassPathXmlApplicationContext(&quot;META-INF/spring/amqp-consumer.xml&quot;);
+  }
+
+}
+</code></pre>
+
+		</div>
+	</article>
+	<div class="share-comment">
+	 <div id="disqus_thread"></div>
+<script>
+(function() { // DON'T EDIT BELOW THIS LINE
+var d = document, s = d.createElement('script');
+s.src = '//tianhaox.disqus.com/embed.js';
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<!-- 多说评论框 start -->
+	<div class="ds-thread" ></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"tianhaox"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+
+	  
+
+	  
+
+	</div>
+</div>        </div>
+			<footer id="footer" class="inner">Copyright &copy; 2014
+Powered by <a target="_blank" href="http://www.mweb.im">MWeb</a> &nbsp;&nbsp; 
+Theme by <a href="http://shashankmehta.in/archive/2012/greyshade.html">Shashank Mehta</a>
+      </footer>
+		</div>
+	</div>
+
+  
+    
+<script src="asset/chart/all-min.js"></script><script type="text/javascript">$(function(){    var mwebii=0;    var mwebChartEleId = 'mweb-chart-ele-';    $('pre>code').each(function(){        mwebii++;        var eleiid = mwebChartEleId+mwebii;        if($(this).hasClass('language-sequence')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = Diagram.parse($(this).text());            diagram.drawSVG(eleiid,{theme: 'simple'});        }else if($(this).hasClass('language-flow')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = flowchart.parse($(this).text());            diagram.drawSVG(eleiid);        }    });});</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
+
+</body>
+</html>

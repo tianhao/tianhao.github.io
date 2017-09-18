@@ -1,0 +1,626 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>
+        
+        Spring使用远程服务(2) —— 使用Hessian/Burlap/HttpInvoker - #(coding X)
+        
+    </title>
+
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="atom.xml" rel="alternate" title="#(coding X)" type="application/atom+xml">
+
+    <link href="asset/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+    <link href="asset/stylesheets/font-awesome.min.css" media="screen, projection" rel="stylesheet" type="text/css">
+    <script src="asset/javascripts/jquery.min.js"></script>
+    <script src="asset/highlightjs/highlight.pack.js"></script>
+    <link href="asset/highlightjs/styles/solarized_dark.css" media="screen, projection" rel="stylesheet" type="text/css">
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!--[if lt IE 9]><script src="asset/javascripts/html5.js"></script><![endif]-->
+    <!-- <link href='http://fonts.googleapis.com/css?family=Nunito:400,300,700' rel='stylesheet' type='text/css'> -->
+    <style type="text/css">
+        /* latin */
+        @font-face {
+            font-family: 'Nunito';
+            font-style: normal;
+            font-weight: 300;
+            src: local('Nunito-Light'), url(asset/font/1TiHc9yag0wq3lDO9cw0voX0hVgzZQUfRDuZrPvH3D8.woff2) format('woff2');
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+        }
+        /* latin */
+        @font-face {
+            font-family: 'Nunito';
+            font-style: normal;
+            font-weight: 400;
+            src: local('Nunito-Regular'), url(asset/font/6TbRXKWJjpj6V2v_WyRbMX-_kf6ByYO6CLYdB4HQE-Y.woff2) format('woff2');
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+        }
+        /* latin */
+        @font-face {
+            font-family: 'Nunito';
+            font-style: normal;
+            font-weight: 700;
+            src: local('Nunito-Bold'), url(asset/font/TttUCfJ272GBgSKaOaD7KoX0hVgzZQUfRDuZrPvH3D8.woff2) format('woff2');
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+        }
+    </style>
+
+    <style type="text/css">
+        .container .left-col{ opacity: 1;}
+        #pagenavi a{ font-size: 1.3em;}
+        #pagenavi .next:before{ top: 3px;}
+        #pagenavi .prev:before{ top: 3px;}
+        .container .mid-col .mid-col-container #content .archives .title{ font-size: 1.5em;}
+        .container .mid-col .mid-col-container #content article{ padding: 15px 0px;}
+        #header .subtitle {
+            line-height: 1.2em;
+            padding-top: 8px;
+        }
+        article pre{ background: none; border: none; padding: 0;}
+        article .entry-content{text-align: left;}
+        .share-comment{ padding: 25px 0px; clear: both;}
+        hr{ margin: 20px 0px;border: 0; border-top:solid 1px #ddd;}
+    </style>
+
+</head>
+
+<body>
+<div class="container">
+    <div class="left-col">
+        <div class="intrude-less">
+            <header id="header" class="inner">
+                
+                <div class="profilepic">
+                    <img src="asset/icon.png" style="width:160px;">
+                </div>
+                
+
+                <h1><a href="index.html">#(coding X)</a></h1>
+                <p class="subtitle">写代码，折腾各种好玩的东西！</p>
+                <nav id="main-nav">
+                    <ul class="main">
+                        
+                        <li id=""><a target="_self" href="index.html">Home</a></li>
+                        
+                        <li id=""><a target="_self" href="archives.html">Archives</a></li>
+                        
+                    </ul>
+                </nav>
+
+                <nav id="sub-nav">
+                    <div class="social">
+
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a target="_blank" class="weibo" href="http://weibo.com/liemi
+
+
+
+
+
+http://weibo.com/liemi" title="weibo">Weibo</a>
+                        <a target="_blank" class="twitter" target="_blank" href="https://twitter.com/tianhaox_com" title="Twitter">Twitter</a>
+                        <a target="_blank" class="github" target="_blank" href="https://github.com/tianhao" title="GitHub">GitHub</a>
+                        
+
+                        <a class="rss" href="atom.xml" title="RSS">RSS</a>
+
+                    </div>
+                </nav>
+                <br>
+                <div id="site-categories" class="side-item ">
+                    <div class="side-header">
+                        <h2>Categories</h2>
+                    </div>
+                    <div class="side-content">
+                        <p class="cat-list">
+                            
+                            <a href="Life.html"><strong>Life</strong></a>
+                            
+                            <a href="Spring.html"><strong>Spring</strong></a>
+                            
+                            <a href="Spring%20Boot.html"><strong>Spring Boot</strong></a>
+                            
+                        </p>
+                    </div>
+                </div>
+								<br>
+                <div id="site-categories" class="side-item">
+                    <div class="side-header">
+                        <h2>Recent Posts</h2>
+                    </div>
+                    <div class="side-content">
+                        <ul class="posts-list">
+                            
+                            
+                            <li class="post">
+                                <a href="14787505123542.html">SpringBoot 开发工具</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14786773151130.html">Spring Boot 发布</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14786335106268.html">Spring Boot 深入Actuator</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14785948397032.html">Spring Boot 自定义配置</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14785852868633.html">Spring Boot 开发第一个应用程序</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14785139214429.html">Spring Boot 入门：安装和构建</a>
+                            </li>
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                        </ul>
+                    </div>
+                </div>
+            </header>
+        </div> <!-- intrude-less -->
+    </div> <!-- left-col -->
+
+    <div class="mid-col">
+        <div class="mid-col-container">
+ <div id="content" class="inner">
+
+	<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+		<h1 class="title" itemprop="name">Spring使用远程服务(2) —— 使用Hessian/Burlap/HttpInvoker</h1>
+		<div class="entry-content" itemprop="articleBody">
+			<p><em>——《Spring实战》笔记 第15章</em></p>
+
+<p>这3者都是基于HTTP服务的RPC，其中Hessian和Burlap都是由caucho提供的，HttpInvoker是Spring提供的，他们各自的特点：<br/>
+1. Hessian，使用二进制消息进行客户端和服务端交互，可以一直到非Java的语言中，可读性差，节省宽带，使用私有序列化机制，复杂对象不一定行。<br/>
+2. Burlap是基于XML的远程条用技术，可以移植到能够解析XML的语言上，可读性强，耗宽带，使用私有序列化机制，复杂对象不一定行。<br/>
+3. HttpInvoker，由Spring提供的，使用JAVA对象序列化机制，客户端和服务端都必须是Spring。</p>
+
+<p>Spring下的 Hessian、Burlap、HttpInvoker的使用方式跟RMI差不多，最红要的使用区别是RMI不是MVC，不需要要配置MVC，而其他3个是基于MVC的，要将服务配置进MVC中。</p>
+
+<p>下面可以看到 Hessian、Burlap、HttpInvoker的使用方法除了类名不同意外，几乎完全一致。</p>
+
+<h2 id="toc_0">前提</h2>
+
+<ol>
+<li>Hessian、Burlap、HttpInvoker是基于HTTP的远程调用服务， 所以要放在SpringMVC下面；</li>
+<li>开放的接口返回的对象要能序列化。</li>
+</ol>
+
+<p>坑：经测试，前2种方式的服务都不是很稳定，没有改过任何代码，有时候从客户端能获取到数据，有时候不行，然后重新编译几次又能获取到数据，服务端的代码没什么逻辑直接返回一个对象。</p>
+
+<h2 id="toc_1">1.启用Hessian/Burlap/HttpInvoker服务</h2>
+
+<p>SpringMVC 的HTTP服务有多种配置方式， 通过web.xml + SpringMvc.xml配置 或者 Java代码配置。这里使用Java代码配置。</p>
+
+<p>跟其他的MVC配置类似， 增加了部分配置， 主要是为了让MVC框架能够识别 *.service 的url请求并指派给指定类处理。</p>
+
+<p><strong>DataConfig类</strong><br/>
+略</p>
+
+<p><strong>RootConfig类</strong><br/>
+略</p>
+
+<p><strong>AbstractAnnotationConfigDispatcherServletInitializer类</strong><br/>
+注意最后一个方法<code>getServletMappings</code>增加了<code>*.service</code></p>
+
+<pre><code class="language-JAVA">package spittr.config;
+
+import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
+
+import spittr.web.WebConfig;
+
+public class SpitterWebInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
+  
+  @Override
+  protected Class&lt;?&gt;[] getRootConfigClasses() {
+    return new Class&lt;?&gt;[] { RootConfig.class };
+  }
+
+  @Override
+  protected Class&lt;?&gt;[] getServletConfigClasses() {
+    return new Class&lt;?&gt;[] { WebConfig.class };
+  }
+
+  @Override
+  protected String[] getServletMappings() {
+    return new String[] { &quot;/&quot;, &quot;*.service&quot; };
+  }
+
+}
+</code></pre>
+
+<p><strong>WebMvcConfigurerAdapter类</strong></p>
+
+<p>这里新增了4个Beans: <strong>HessianServiceExporter</strong> 、<strong>BurlapServiceExporter</strong> 、<strong>HttpInvokerServiceExporter</strong> 和 <strong>HandlerMapping</strong>, 前3个Bean分别开启Hessian、Burlap和HttpInvoker服务，都是将SpitterService封装成HTTP服务发布出去，发布的地址与MVC容器的地址一致，最后HandlerMapping将这3个封装好的绑定到相应的URL地址，提供给外部访问。<br/>
+特别注意HandlerMapping 中设置了<code>mapping.setOrder(0);</code>， 这是因为一般的MVC项目都会在 <code>configureDefaultServletHandling</code>方法中设置<code>configurer.enable();</code>，它的效果是除了Controller中指定的URL路径，其它URL都作为静态资源的URL， 而我们新增的HandlerMappingURL优先级低于静态资源，最终变成404错误， 所以要把新增的HandlerMapping优先级提高到比静态资源高，这里强制设成0，其实应该有更优化的值。</p>
+
+<pre><code class="language-JAVA">package spittr.web;
+
+import ...此处略过一堆package
+
+@Configuration
+@EnableWebMvc
+@ComponentScan(&quot;spittr.web&quot;)
+public class WebConfig extends WebMvcConfigurerAdapter {
+
+    ...此处略过一堆其它MVC配置。
+    
+   @Bean
+    public SpitterService spitterService(){
+        return new SpitterServiceImpl();
+    }
+
+    @Bean
+    public HessianServiceExporter hessianExportedSpitterService(SpitterService spitterService){
+        HessianServiceExporter exporter = new HessianServiceExporter();
+        exporter.setService(spitterService);
+        exporter.setServiceInterface(SpitterService.class);
+        return exporter;
+    }
+
+    @Bean
+    public BurlapServiceExporter burlapExportedSpitterService(SpitterService spitterService){
+        BurlapServiceExporter exporter = new BurlapServiceExporter();
+        exporter.setService(spitterService);
+        exporter.setServiceInterface(SpitterService.class);
+        return exporter;
+    }
+
+     @Bean
+    public HttpInvokerServiceExporter httpExportedSpitterService(SpitterService spitterService){
+        HttpInvokerServiceExporter exporter = new HttpInvokerServiceExporter();
+        exporter.setService(spitterService);
+        exporter.setServiceInterface(SpitterService.class);
+        return exporter;
+    }
+
+    @Bean
+    public HandlerMapping hessianMapping() {
+        SimpleUrlHandlerMapping mapping = new SimpleUrlHandlerMapping();
+        Properties mappings = new Properties();
+        mappings.setProperty(&quot;/hessian/spitter.service&quot;, &quot;hessianExportedSpitterService&quot;);
+        mappings.setProperty(&quot;/burlap/spitter.service&quot;, &quot;burlapExportedSpitterService&quot;);
+        mappings.setProperty(&quot;/httpinvoker/spitter.service&quot;, &quot;httpExportedSpitterService&quot;);
+        mapping.setMappings(mappings);
+        mapping.setOrder(0);
+        return mapping;
+    }
+
+    @Override
+    public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
+        configurer.enable();
+    }
+
+}
+
+</code></pre>
+
+<h2 id="toc_2">2.客户端代码</h2>
+
+<h3 id="toc_3">Hessian客户端</h3>
+
+<p><strong>配置类</strong></p>
+
+<pre><code class="language-JAVA">package spittr.client;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.remoting.caucho.HessianProxyFactoryBean;
+import spittr.service.SpitterService;
+
+/**
+ * Created by tianhao on 16/9/25.
+ */
+@Configuration
+public class HessianClientConfig {
+
+    @Bean
+    public HessianProxyFactoryBean spitterService(){
+        HessianProxyFactoryBean proxy = new HessianProxyFactoryBean();
+        proxy.setServiceUrl(&quot;http://localhost:8080/hessian/spitter.service&quot;);
+        proxy.setServiceInterface(SpitterService.class);
+        return proxy;
+    }
+
+}
+</code></pre>
+
+<p><strong>测试Hessian服务</strong><br/>
+注意：这里的ctx.getBean(&quot;spitterService&quot;)中的<code>spitterService</code>对应的是HessianClientConfig类的<code>spitterService()</code>方法的名称，如果两边名称不一致会获取不到Bean。</p>
+
+<pre><code class="language-JAVA">package spittr.client;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import spittr.model.Spitter;
+import spittr.service.SpitterService;
+
+/**
+ * Created by tianhao on 16/9/25.
+ */
+public class HessionClientMain {
+
+    public static void main(String[] args) {
+        ApplicationContext ctx = new AnnotationConfigApplicationContext(HessianClientConfig.class);
+        SpitterService service = (SpitterService) ctx.getBean(&quot;spitterService&quot;);
+        Spitter spitter = service.getSpitter(0);
+        if (spitter != null) {
+            System.out.println(&quot;返回结果:&quot; + spitter.toString());
+        } else {
+            System.out.println(&quot;没有获取到数据.&quot;);
+        }
+    }
+}
+</code></pre>
+
+<h3 id="toc_4">Burlap客户端</h3>
+
+<p><strong>配置类</strong></p>
+
+<pre><code class="language-JAVA">package spittr.client;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.remoting.caucho.BurlapProxyFactoryBean;
+import spittr.service.SpitterService;
+
+/**
+ * Created by tianhao on 16/9/25.
+ */
+@Configuration
+public class BurlapClientConfig {
+
+    @Bean
+    public BurlapProxyFactoryBean spitterService(){
+        BurlapProxyFactoryBean proxy = new BurlapProxyFactoryBean();
+        proxy.setServiceUrl(&quot;http://localhost:8080/burlap/spitter.service&quot;);
+        proxy.setServiceInterface(SpitterService.class);
+        return proxy;
+    }
+
+}
+</code></pre>
+
+<p><strong>测试Burlap服务</strong><br/>
+注意：这里的ctx.getBean(&quot;spitterService&quot;)中的<code>spitterService</code>对应的是BurlapClientConfig类的<code>spitterService()</code>方法的名称，如果两边名称不一致会获取不到Bean。</p>
+
+<pre><code class="language-JAVA">package spittr.client;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import spittr.model.Spitter;
+import spittr.service.SpitterService;
+
+/**
+ * Created by tianhao on 16/9/25.
+ */
+public class BurlapClientMain {
+
+    public static void main(String[] args) {
+        ApplicationContext ctx = new AnnotationConfigApplicationContext(BurlapClientConfig.class);
+        SpitterService service = (SpitterService) ctx.getBean(&quot;spitterService&quot;);
+
+        Spitter spitter = service.getSpitter(0);
+        if (spitter != null) {
+            System.out.println(&quot;返回结果:&quot; + spitter.toString());
+        } else {
+            System.out.println(&quot;没有获取到数据.&quot;);
+        }
+    }
+}
+
+</code></pre>
+
+<h3 id="toc_5">HttpInvoker客户端</h3>
+
+<p><strong>配置类</strong></p>
+
+<pre><code class="language-JAVA">package spittr.client;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.remoting.caucho.BurlapProxyFactoryBean;
+import spittr.service.SpitterService;
+
+/**
+ * Created by tianhao on 16/9/25.
+ */
+@Configuration
+public class HttpInvokerClientConfig {
+
+    @Bean
+    public BurlapProxyFactoryBean spitterService(){
+        BurlapProxyFactoryBean proxy = new BurlapProxyFactoryBean();
+        proxy.setServiceUrl(&quot;http://localhost:8080/httpinvoker/spitter.service&quot;);
+        proxy.setServiceInterface(SpitterService.class);
+        return proxy;
+    }
+
+}
+</code></pre>
+
+<p><strong>测试HttpInvoker服务</strong></p>
+
+<pre><code class="language-JAVA">package spittr.client;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import spittr.model.Spitter;
+import spittr.service.SpitterService;
+
+/**
+ * Created by tianhao on 16/9/25.
+ */
+public class HttpInvokerClientMain {
+
+    public static void main(String[] args) {
+        ApplicationContext ctx = new AnnotationConfigApplicationContext(BurlapClientConfig.class);
+        SpitterService service = (SpitterService) ctx.getBean(&quot;spitterService&quot;);
+
+        Spitter spitter = service.getSpitter(0);
+        if (spitter != null) {
+            System.out.println(&quot;返回结果:&quot; + spitter.toString());
+        } else {
+            System.out.println(&quot;没有获取到数据.&quot;);
+        }
+    }
+}
+</code></pre>
+
+<h2 id="toc_6">3.踩坑总结：</h2>
+
+<ol>
+<li>服务端的HandlerMapping需要设置顺序；</li>
+<li>客户端Bean名称要与配置类的方法名称一致；</li>
+<li>测试不通过时先把缓存清理干净（包括编译的文件）再测试</li>
+<li>依赖包只要：<code>compile group: &#39;com.caucho&#39;, name: &#39;hessian&#39;, version: &#39;4.0.38&#39;</code>, 包含Hessian和Burlap，不要再导入burlap的包，否则冲突</li>
+</ol>
+
+<h2 id="toc_7">4.附上gradle配置</h2>
+
+<p><strong>build.gradle</strong></p>
+
+<pre><code class="language-Gradle">apply plugin: &#39;eclipse&#39;
+apply plugin: &#39;war&#39;
+apply plugin: &#39;eclipse-wtp&#39;
+
+dependencies {
+    compile &quot;org.springframework:spring-webmvc:4.0.7.RELEASE&quot;
+    compile &quot;org.springframework:spring-jdbc:4.0.7.RELEASE&quot;
+    compile &quot;com.h2database:h2:1.4.182&quot;
+    compile &quot;org.hibernate:hibernate-validator:5.0.1.Final&quot;
+    compile &quot;org.apache.commons:commons-lang3:3.1&quot;
+    compile &quot;org.thymeleaf:thymeleaf-spring4:2.1.3.RELEASE&quot;
+
+    providedCompile &quot;javax.servlet:javax.servlet-api:3.1.0&quot;
+
+    testCompile &quot;junit:junit-dep:4.11&quot;
+    testCompile &quot;org.springframework:spring-test:4.0.7.RELEASE&quot;
+    testCompile &quot;org.mockito:mockito-core:1.9.5&quot;
+    testCompile &quot;org.hamcrest:hamcrest-library:1.3&quot;
+
+    compile group: &#39;com.caucho&#39;, name: &#39;hessian&#39;, version: &#39;4.0.38&#39;
+//    compile group: &#39;com.caucho&#39;, name: &#39;burlap&#39;, version: &#39;2.1.12&#39;
+
+}
+
+repositories {
+    maven { url &#39;http://maven.springframework.org/release&#39; }
+    maven { url &#39;http://maven.springframework.org/milestone&#39; }
+    maven { url &#39;http://maven.springframework.org/snapshot&#39; }
+    maven { url &#39;http://download.java.net/maven/2&#39; }
+    mavenCentral()
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = &#39;1.8&#39;
+}
+
+war {
+    baseName = &#39;spittr&#39;
+}
+
+eclipse {
+    wtp {
+        component {
+            contextPath = &#39;spittr&#39;
+        }
+    }
+}
+</code></pre>
+
+<p><strong>settings.gradle</strong></p>
+
+<pre><code>rootProject.name = &#39;HessianBurlap&#39;
+</code></pre>
+
+		</div>
+	</article>
+	<div class="share-comment">
+	 <div id="disqus_thread"></div>
+<script>
+(function() { // DON'T EDIT BELOW THIS LINE
+var d = document, s = d.createElement('script');
+s.src = '//tianhaox.disqus.com/embed.js';
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<!-- 多说评论框 start -->
+	<div class="ds-thread" ></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"tianhaox"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+
+	  
+
+	  
+
+	</div>
+</div>        </div>
+			<footer id="footer" class="inner">Copyright &copy; 2014
+Powered by <a target="_blank" href="http://www.mweb.im">MWeb</a> &nbsp;&nbsp; 
+Theme by <a href="http://shashankmehta.in/archive/2012/greyshade.html">Shashank Mehta</a>
+      </footer>
+		</div>
+	</div>
+
+  
+    
+<script src="asset/chart/all-min.js"></script><script type="text/javascript">$(function(){    var mwebii=0;    var mwebChartEleId = 'mweb-chart-ele-';    $('pre>code').each(function(){        mwebii++;        var eleiid = mwebChartEleId+mwebii;        if($(this).hasClass('language-sequence')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = Diagram.parse($(this).text());            diagram.drawSVG(eleiid,{theme: 'simple'});        }else if($(this).hasClass('language-flow')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = flowchart.parse($(this).text());            diagram.drawSVG(eleiid);        }    });});</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
+
+</body>
+</html>

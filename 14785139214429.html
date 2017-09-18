@@ -1,0 +1,602 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>
+        
+        Spring Boot 入门：安装和构建 - #(coding X)
+        
+    </title>
+
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="atom.xml" rel="alternate" title="#(coding X)" type="application/atom+xml">
+
+    <link href="asset/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+    <link href="asset/stylesheets/font-awesome.min.css" media="screen, projection" rel="stylesheet" type="text/css">
+    <script src="asset/javascripts/jquery.min.js"></script>
+    <script src="asset/highlightjs/highlight.pack.js"></script>
+    <link href="asset/highlightjs/styles/solarized_dark.css" media="screen, projection" rel="stylesheet" type="text/css">
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!--[if lt IE 9]><script src="asset/javascripts/html5.js"></script><![endif]-->
+    <!-- <link href='http://fonts.googleapis.com/css?family=Nunito:400,300,700' rel='stylesheet' type='text/css'> -->
+    <style type="text/css">
+        /* latin */
+        @font-face {
+            font-family: 'Nunito';
+            font-style: normal;
+            font-weight: 300;
+            src: local('Nunito-Light'), url(asset/font/1TiHc9yag0wq3lDO9cw0voX0hVgzZQUfRDuZrPvH3D8.woff2) format('woff2');
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+        }
+        /* latin */
+        @font-face {
+            font-family: 'Nunito';
+            font-style: normal;
+            font-weight: 400;
+            src: local('Nunito-Regular'), url(asset/font/6TbRXKWJjpj6V2v_WyRbMX-_kf6ByYO6CLYdB4HQE-Y.woff2) format('woff2');
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+        }
+        /* latin */
+        @font-face {
+            font-family: 'Nunito';
+            font-style: normal;
+            font-weight: 700;
+            src: local('Nunito-Bold'), url(asset/font/TttUCfJ272GBgSKaOaD7KoX0hVgzZQUfRDuZrPvH3D8.woff2) format('woff2');
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+        }
+    </style>
+
+    <style type="text/css">
+        .container .left-col{ opacity: 1;}
+        #pagenavi a{ font-size: 1.3em;}
+        #pagenavi .next:before{ top: 3px;}
+        #pagenavi .prev:before{ top: 3px;}
+        .container .mid-col .mid-col-container #content .archives .title{ font-size: 1.5em;}
+        .container .mid-col .mid-col-container #content article{ padding: 15px 0px;}
+        #header .subtitle {
+            line-height: 1.2em;
+            padding-top: 8px;
+        }
+        article pre{ background: none; border: none; padding: 0;}
+        article .entry-content{text-align: left;}
+        .share-comment{ padding: 25px 0px; clear: both;}
+        hr{ margin: 20px 0px;border: 0; border-top:solid 1px #ddd;}
+    </style>
+
+</head>
+
+<body>
+<div class="container">
+    <div class="left-col">
+        <div class="intrude-less">
+            <header id="header" class="inner">
+                
+                <div class="profilepic">
+                    <img src="asset/icon.png" style="width:160px;">
+                </div>
+                
+
+                <h1><a href="index.html">#(coding X)</a></h1>
+                <p class="subtitle">写代码，折腾各种好玩的东西！</p>
+                <nav id="main-nav">
+                    <ul class="main">
+                        
+                        <li id=""><a target="_self" href="index.html">Home</a></li>
+                        
+                        <li id=""><a target="_self" href="archives.html">Archives</a></li>
+                        
+                    </ul>
+                </nav>
+
+                <nav id="sub-nav">
+                    <div class="social">
+
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a target="_blank" class="weibo" href="http://weibo.com/liemi
+
+
+
+
+
+http://weibo.com/liemi" title="weibo">Weibo</a>
+                        <a target="_blank" class="twitter" target="_blank" href="https://twitter.com/tianhaox_com" title="Twitter">Twitter</a>
+                        <a target="_blank" class="github" target="_blank" href="https://github.com/tianhao" title="GitHub">GitHub</a>
+                        
+
+                        <a class="rss" href="atom.xml" title="RSS">RSS</a>
+
+                    </div>
+                </nav>
+                <br>
+                <div id="site-categories" class="side-item ">
+                    <div class="side-header">
+                        <h2>Categories</h2>
+                    </div>
+                    <div class="side-content">
+                        <p class="cat-list">
+                            
+                            <a href="Life.html"><strong>Life</strong></a>
+                            
+                            <a href="Spring.html"><strong>Spring</strong></a>
+                            
+                            <a href="Spring%20Boot.html"><strong>Spring Boot</strong></a>
+                            
+                        </p>
+                    </div>
+                </div>
+								<br>
+                <div id="site-categories" class="side-item">
+                    <div class="side-header">
+                        <h2>Recent Posts</h2>
+                    </div>
+                    <div class="side-content">
+                        <ul class="posts-list">
+                            
+                            
+                            <li class="post">
+                                <a href="14787505123542.html">SpringBoot 开发工具</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14786773151130.html">Spring Boot 发布</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14786335106268.html">Spring Boot 深入Actuator</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14785948397032.html">Spring Boot 自定义配置</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14785852868633.html">Spring Boot 开发第一个应用程序</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14785139214429.html">Spring Boot 入门：安装和构建</a>
+                            </li>
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                        </ul>
+                    </div>
+                </div>
+            </header>
+        </div> <!-- intrude-less -->
+    </div> <!-- left-col -->
+
+    <div class="mid-col">
+        <div class="mid-col-container">
+ <div id="content" class="inner">
+
+	<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+		<h1 class="title" itemprop="name">Spring Boot 入门：安装和构建</h1>
+		<div class="entry-content" itemprop="articleBody">
+			<h2 id="toc_0"><em>《Spring Boot实战》笔记 第1章</em></h2>
+
+<h2 id="toc_1">安装（Homebrew）</h2>
+
+<p>brew tap pivotal/tap<br/>
+brew install springboot<br/>
+spring --version</p>
+
+<h2 id="toc_2">构建初始化项目</h2>
+
+<p>下面3种构建方式都向 start.spring.io 地址发送构建请求然后下载初始化项目文件，所以都要求网络可用。</p>
+
+<h3 id="toc_3">1. 通过 start.spring.io Web界面构建初始项目</h3>
+
+<p><img src="media/14785139214429/14785147544292.jpg" alt=""/></p>
+
+<p>点击“Switch to the full version”会展示更多定制选项，包括项目信息和起步依赖选项：<br/>
+<img src="media/14785139214429/14785148349125.jpg" alt=""/><br/>
+<img src="media/14785139214429/14785149271601.jpg" alt=""/></p>
+
+<p>点击“Generate Project”后会下载一个初始项目包。</p>
+
+<h3 id="toc_4">2. 通过 IntelliJ Idea 构建初始项目</h3>
+
+<p><img src="media/14785139214429/14785151710820.jpg" alt=""/></p>
+
+<p><img src="media/14785139214429/14785152865447.jpg" alt=""/></p>
+
+<p><img src="media/14785139214429/14785152076947.jpg" alt=""/></p>
+
+<h3 id="toc_5">3. 通过Spring Boot CLI 创建初始化项目</h3>
+
+<pre><code>$ spring init --build gradle -aspringbootinit -gcom.tianhaox -j1.8 -nspringbootinit -v 1.0 -pjar --package-name  com.tianhaox.springboot -x -dweb,jpa,security --force springbootinit
+Using service at https://start.spring.io
+Project extracted to &#39;/path/to/springbootinit&#39;
+</code></pre>
+
+<p><strong>查看参数说明</strong></p>
+
+<pre><code>$ spring help init
+spring init - Initialize a new project using Spring Initializr (start.spring.io)
+
+usage: spring init [options] [location]
+
+Option              Description
+------              -----------
+-a, --artifactId    Project coordinates; infer archive
+                      name (for example &#39;test&#39;)
+-b, --boot-version  Spring Boot version (for example
+                      &#39;1.2.0.RELEASE&#39;)
+--build             Build system to use (for example
+                      &#39;maven&#39; or &#39;gradle&#39;) (default: maven)
+-d, --dependencies  Comma-separated list of dependency
+                      identifiers to include in the
+                      generated project
+--description       Project description
+-f, --force         Force overwrite of existing files
+--format            Format of the generated content (for
+                      example &#39;build&#39; for a build file,
+                      &#39;project&#39; for a project archive)
+                      (default: project)
+-g, --groupId       Project coordinates (for example &#39;org.
+                      test&#39;)
+-j, --java-version  Language level (for example &#39;1.8&#39;)
+-l, --language      Programming language  (for example
+                      &#39;java&#39;)
+-n, --name          Project name; infer application name
+-p, --packaging     Project packaging (for example &#39;jar&#39;)
+--package-name      Package name
+-t, --type          Project type. Not normally needed if
+                      you use --build and/or --format.
+                      Check the capabilities of the
+                      service (--list) for more details
+--target            URL of the service to use (default:
+                      https://start.spring.io)
+-v, --version       Project version (for example &#39;0.0.1-
+                      SNAPSHOT&#39;)
+-x, --extract       Extract the project archive. Inferred
+                      if a location is specified without
+                      an extension
+
+examples:
+
+    To list all the capabilities of the service:
+        $ spring init --list
+
+    To creates a default project:
+        $ spring init
+
+    To create a web my-app.zip:
+        $ spring init -d=web my-app.zip
+
+    To create a web/data-jpa gradle project unpacked:
+        $ spring init -d=web,jpa --build=gradle my-dir
+
+</code></pre>
+
+<p><strong>查看支持的依赖等相关选项</strong></p>
+
+<pre><code>$ spring init --list
+
+  .   ____          _            __ _ _
+ /\\ / ___&#39;_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | &#39;_ | &#39;_| | &#39;_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  &#39;  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+:: Service capabilities ::  https://start.spring.io
+
+Supported dependencies
++-----------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------+
+| Id                                | Description                                                                                                                                                            | Required version            |
++-----------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------+
+| activemq                          | Java Message Service API via Apache ActiveMQ                                                                                                                           | &gt;= 1.4.0.RC1                |
+| activiti-basic                    | Activiti BPMN workflow engine                                                                                                                                          |                             |
+| actuator                          | Production ready features to help you monitor and manage your application                                                                                              |                             |
+| actuator-docs                     | API documentation for the Actuator endpoints                                                                                                                           | &gt;= 1.3.0.M4                 |
+| amqp                              | Advanced Message Queuing Protocol via spring-rabbit                                                                                                                    |                             |
+| aop                               | Aspect-oriented programming including spring-aop and AspectJ                                                                                                           |                             |
+| artemis                           | Java Message Service API via Apache Artemis                                                                                                                            | &gt;= 1.3.0.M2                 |
+| batch                             | Spring Batch including HSQLDB database                                                                                                                                 |                             |
+| cache                             | Spring&#39;s Cache abstraction                                                                                                                                             | &gt;= 1.3.0.M1                 |
+| camel                             | Integration using Apache Camel                                                                                                                                         |                             |
+| cloud-aws                         | AWS native services from spring-cloud-aws                                                                                                                              | &gt;= 1.2.3.RELEASE            |
+| cloud-aws-jdbc                    | Relational databases on AWS with RDS and spring-cloud-aws-jdbc                                                                                                         | &gt;= 1.2.3.RELEASE            |
+| cloud-aws-messaging               | Messaging on AWS with SQS and spring-cloud-aws-messaging                                                                                                               | &gt;= 1.2.3.RELEASE            |
+| cloud-bus-amqp                    | A simple control bus with AMQP and spring-cloud-bus-amqp                                                                                                               | &gt;= 1.2.3.RELEASE            |
+| cloud-bus-kafka                   | A simple control bus with Kafka and spring-cloud-bus                                                                                                                   | (1.3.0.M5,9999.9.9.RELEASE] |
+| cloud-cloudfoundry-discovery      | Service discovery with Cloud Foundry                                                                                                                                   | &gt;= 1.3.0.M4                 |
+| cloud-cluster-etcd                | Leadership election and global state with Etcd and spring-cloud-cluster-etcd                                                                                           | &gt;= 1.3.0.M4                 |
+| cloud-cluster-hazelcast           | Leadership election and global state with Hazelcast and spring-cloud-cluster-hazelcast                                                                                 | &gt;= 1.3.0.M4                 |
+| cloud-cluster-redis               | Leadership election and global state with Redis and spring-cloud-cluster-redis                                                                                         | &gt;= 1.3.0.M4                 |
+| cloud-cluster-zookeeper           | Leadership election and global state with Zookeeper and spring-cloud-cluster-zookeeper                                                                                 | &gt;= 1.3.0.M4                 |
+| cloud-config-client               | spring-cloud-config Client                                                                                                                                             | &gt;= 1.2.3.RELEASE            |
+| cloud-config-server               | Central management for configuration via a git or svn backend                                                                                                          | &gt;= 1.2.3.RELEASE            |
+| cloud-connectors                  | Simplifies connecting to services in cloud platforms, including spring-cloud-connector and spring-cloud-cloudfoundry-connector                                         | &gt;= 1.2.0.RELEASE            |
+| cloud-contract-stub-runner        | Stub Runner for HTTP/Messaging based communication                                                                                                                     | &gt;= 1.4.0.RC1                |
+| cloud-contract-verifier           | Test dependencies required for autogenerated tests                                                                                                                     | &gt;= 1.4.0.RC1                |
+| cloud-contract-wiremock           | Test dependencies required for the WireMock HTTP server                                                                                                                | &gt;= 1.4.0.RC1                |
+| cloud-dataflow-server-local       | Local Data Flow Server implementation                                                                                                                                  | &gt;= 1.3.2.RELEASE            |
+| cloud-dataflow-shell              | Data Flow Shell                                                                                                                                                        | &gt;= 1.3.2.RELEASE            |
+| cloud-eureka                      | Service discovery using spring-cloud-netflix and Eureka                                                                                                                | &gt;= 1.2.3.RELEASE            |
+| cloud-eureka-server               | spring-cloud-netflix Eureka Server                                                                                                                                     | &gt;= 1.2.3.RELEASE            |
+| cloud-feign                       | Declarative REST clients with spring-cloud-netflix Feign                                                                                                               | &gt;= 1.2.3.RELEASE            |
+| cloud-hystrix                     | Circuit breaker with spring-cloud-netflix Hystrix                                                                                                                      | &gt;= 1.2.3.RELEASE            |
+| cloud-hystrix-dashboard           | Circuit breaker dashboard with spring-cloud-netflix Hystrix                                                                                                            | &gt;= 1.2.3.RELEASE            |
+| cloud-oauth2                      | OAuth2 and distributed application patterns with spring-cloud-security                                                                                                 | &gt;= 1.2.3.RELEASE            |
+| cloud-ribbon                      | Client side load balancing with spring-cloud-netflix and Ribbon                                                                                                        | &gt;= 1.2.3.RELEASE            |
+| cloud-security                    | Secure load balancing and routing with spring-cloud-security                                                                                                           | &gt;= 1.2.3.RELEASE            |
+| cloud-sleuth-stream               | Marshals Spring Cloud Sleuth Spans over a Spring Cloud Stream binder                                                                                                   | &gt;= 1.3.0.M4                 |
+| cloud-sleuth-zipkin-stream        | Consumes span data in messages from Spring Cloud Sleuth Stream and writes them to a Zipkin store                                                                       | &gt;= 1.3.0.M4                 |
+| cloud-starter                     | spring-cloud-context (e.g. Bootstrap context and @RefreshScope)                                                                                                        | &gt;= 1.2.3.RELEASE            |
+| cloud-starter-consul-config       | Configuration management with Hashicorp Consul                                                                                                                         | &gt;= 1.3.0.M4                 |
+| cloud-starter-consul-discovery    | Service discovery with Hashicorp Consul                                                                                                                                | &gt;= 1.3.0.M4                 |
+| cloud-starter-sleuth              | Distributed tracing via logs with spring-cloud-sleuth                                                                                                                  | &gt;= 1.3.0.M4                 |
+| cloud-starter-zipkin              | Distributed tracing with an existing Zipkin installation and spring-cloud-sleuth-zipkin. Alternatively, consider Sleuth Stream.                                        | &gt;= 1.3.0.M4                 |
+| cloud-starter-zookeeper-config    | Configuration management with Zookeeper and spring-cloud-zookeeper-config                                                                                              | &gt;= 1.3.0.M4                 |
+| cloud-starter-zookeeper-discovery | Service discovery with Zookeeper and spring-cloud-zookeeper-discovery                                                                                                  | &gt;= 1.3.0.M4                 |
+| cloud-stream-binder-kafka         | Messaging microservices with Kafka                                                                                                                                     | &gt;= 1.3.0.M4                 |
+| cloud-stream-binder-rabbit        | Messaging microservices with RabbitMQ                                                                                                                                  | &gt;= 1.3.0.M4                 |
+| cloud-task                        | Task result tracking along with integration with batch and streams                                                                                                     | &gt;= 1.2.3.RELEASE            |
+| cloud-turbine                     | Circuit breaker metric aggregation using spring-cloud-netflix with Turbine and server-sent events                                                                      | &gt;= 1.2.3.RELEASE            |
+| cloud-turbine-amqp                | Circuit breaker metric aggregation using spring-cloud-netflix with Turbine and AMQP                                                                                    | [1.2.0.RELEASE,1.3.0.M5]    |
+| cloud-turbine-stream              | Circuit breaker metric aggregation using spring-cloud-netflix with Turbine and Spring Cloud Stream (choose a specific Stream binder implementation to complement this) | &gt;= 1.3.0.M5                 |
+| cloud-zuul                        | Intelligent and programmable routing with spring-cloud-netflix Zuul                                                                                                    | &gt;= 1.2.3.RELEASE            |
+| configuration-processor           | Generate metadata for your custom configuration keys                                                                                                                   | &gt;= 1.2.0.RELEASE            |
+| data-cassandra                    | Cassandra NoSQL Database, including spring-data-cassandra                                                                                                              | &gt;= 1.3.0.RC1                |
+| data-couchbase                    | Couchbase NoSQL database, including spring-data-couchbase                                                                                                              | &gt;= 1.4.0.M1                 |
+| data-elasticsearch                | Elasticsearch search and analytics engine including spring-data-elasticsearch                                                                                          |                             |
+| data-gemfire                      | GemFire distributed data store including spring-data-gemfire                                                                                                           |                             |
+| data-jpa                          | Java Persistence API including spring-data-jpa, spring-orm and Hibernate                                                                                               |                             |
+| data-jpa                          | Java Persistence API including spring-data-jpa, spring-orm and Hibernate                                                                                               |                             |
+| data-mongodb                      | MongoDB NoSQL Database, including spring-data-mongodb                                                                                                                  |                             |
+| data-neo4j                        | Neo4j NoSQL graph database, including spring-data-neo4j                                                                                                                | &gt;= 1.4.0.M2                 |
+| data-redis                        | REDIS key-value data store, including spring-redis                                                                                                                     |                             |
+| data-redis                        | REDIS key-value data store, including spring-redis                                                                                                                     |                             |
+| data-rest                         | Exposing Spring Data repositories over REST via spring-data-rest-webmvc                                                                                                |                             |
+| data-rest-hal                     | Browsing Spring Data REST repositories in your browser                                                                                                                 | &gt;= 1.3.0.M1                 |
+| data-solr                         | Apache Solr search platform, including spring-data-solr                                                                                                                |                             |
+| derby                             | Apache Derby database (with embedded support)                                                                                                                          | &gt;= 1.2.2.RELEASE            |
+| devtools                          | Spring Boot Development Tools                                                                                                                                          | &gt;= 1.3.0.M1                 |
+| experimental-web-reactive         | Reactive web development with Apache Tomcat and Spring Reactive (experimental)                                                                                         | &gt;= 2.0.0.BUILD-SNAPSHOT     |
+| freemarker                        | FreeMarker templating engine                                                                                                                                           |                             |
+| groovy-templates                  | Groovy templating engine                                                                                                                                               |                             |
+| h2                                | H2 database (with embedded support)                                                                                                                                    |                             |
+| hateoas                           | HATEOAS-based RESTful services                                                                                                                                         | &gt;= 1.2.2.RELEASE            |
+| hornetq                           | Java Message Service API via HornetQ                                                                                                                                   | [1.1.0.RELEASE,1.4.0.RC1)   |
+| hsql                              | HSQLDB database (with embedded support)                                                                                                                                |                             |
+| integration                       | Common spring-integration modules                                                                                                                                      |                             |
+| jdbc                              | JDBC databases                                                                                                                                                         |                             |
+| jersey                            | RESTful Web Services framework                                                                                                                                         | &gt;= 1.2.0.RELEASE            |
+| jooq                              | Persistence support using Java Object Oriented Querying                                                                                                                | &gt;= 1.3.0.M2                 |
+| jta-atomikos                      | JTA distributed transactions via Atomikos                                                                                                                              | &gt;= 1.2.0.M1                 |
+| jta-bitronix                      | JTA distributed transactions via Bitronix                                                                                                                              | &gt;= 1.2.0.M1                 |
+| jta-narayana                      | JTA distributed transactions via Narayana                                                                                                                              | &gt;= 1.4.0.M2                 |
+| lombok                            | Java annotation library which helps to reduce boilerplate code and code faster                                                                                         |                             |
+| mail                              | javax.mail                                                                                                                                                             | &gt;= 1.2.0.RC1                |
+| mobile                            | Simplify the development of mobile web applications with spring-mobile                                                                                                 |                             |
+| mustache                          | Mustache templating engine                                                                                                                                             | &gt;= 1.2.2.RELEASE            |
+| mybatis                           | Persistence support using MyBatis                                                                                                                                      | &gt;= 1.3.0.RELEASE            |
+| mysql                             | MySQL jdbc driver                                                                                                                                                      |                             |
+| postgresql                        | PostgreSQL jdbc driver                                                                                                                                                 |                             |
+| ratpack                           | Spring Boot integration for the Ratpack framework                                                                                                                      | &gt;= 1.2.0.RELEASE            |
+| remote-shell                      | CRaSH shell integration                                                                                                                                                |                             |
+| restdocs                          | Document RESTful services by combining hand-written and auto-generated documentation                                                                                   |                             |
+| retry                             | Provide declarative retry support via spring-retry                                                                                                                     | &gt;= 1.3.0.M2                 |
+| scs-circuit-breaker               | Hystrix circuit breaker on Pivotal Cloud Foundry                                                                                                                       | [1.3.0.RELEASE,1.4.0.M1)    |
+| scs-config-client                 | Config client on Pivotal Cloud Foundry                                                                                                                                 | [1.3.0.RELEASE,1.4.0.M1)    |
+| scs-service-registry              | Eureka service discovery on Pivotal Cloud Foundry                                                                                                                      | [1.3.0.RELEASE,1.4.0.M1)    |
+| security                          | Secure your application via spring-security                                                                                                                            |                             |
+| session                           | API and implementations for managing a user’s session information                                                                                                      | &gt;= 1.3.0.M2                 |
+| social-facebook                   | spring-social-facebook                                                                                                                                                 |                             |
+| social-linkedin                   | spring-social-linkedin                                                                                                                                                 |                             |
+| social-twitter                    | spring-social-twitter                                                                                                                                                  |                             |
+| thymeleaf                         | Thymeleaf templating engine, including integration with Spring                                                                                                         |                             |
+| vaadin                            | Vaadin java web application framework                                                                                                                                  |                             |
+| validation                        | JSR-303 validation infrastructure (already included with web)                                                                                                          | &gt;= 1.3.0.M1                 |
+| velocity                          | Velocity templating engine                                                                                                                                             | [1.1.6.RELEASE,1.4.0.M2)    |
+| web                               | Full-stack web development with Tomcat and Spring MVC                                                                                                                  |                             |
+| web-services                      | Contract-first SOAP service development with Spring Web Services                                                                                                       |                             |
+| web-services                      | Contract-first SOAP service development with Spring Web Services                                                                                                       |                             |
+| websocket                         | Websocket development with SockJS and STOMP                                                                                                                            |                             |
+| zipkin-server                     | Consumes span data over HTTP and writes them to a span store                                                                                                           | &gt;= 1.3.0.M4                 |
+| zipkin-ui                         | add the Zipkin UI module to the Zipkin server to get a Zipkin service that accepts Spans and provides visualization                                                    | &gt;= 1.3.3.RELEASE            |
++-----------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------+
+
+
+Project types (* denotes the default)
++-----------------+-----------------------------------------+-----------------------------+
+| Id              | Description                             | Tags                        |
++-----------------+-----------------------------------------+-----------------------------+
+| gradle-build    | Generate a Gradle build file            | build:gradle,format:build   |
+| gradle-project  | Generate a Gradle based project archive | build:gradle,format:project |
+| maven-build     | Generate a Maven pom.xml                | build:maven,format:build    |
+| maven-project * | Generate a Maven based project archive  | build:maven,format:project  |
++-----------------+-----------------------------------------+-----------------------------+
+
+
+Parameters
++-------------+------------------------------------------+------------------------------+
+| Id          | Description                              | Default value                |
++-------------+------------------------------------------+------------------------------+
+| type        | project type                             | maven-project                |
+| bootVersion | spring boot version                      | 1.4.1.RELEASE                |
+| packaging   | project packaging                        | jar                          |
+| javaVersion | language level                           | 1.8                          |
+| language    | programming language                     | java                         |
+| groupId     | project coordinates                      | com.example                  |
+| artifactId  | project coordinates (infer archive name) | demo                         |
+| version     | project version                          | 0.0.1-SNAPSHOT               |
+| name        | project name (infer application name)    | demo                         |
+| description | project description                      | Demo project for Spring Boot |
+| packageName | root package                             | com.example                  |
++-------------+------------------------------------------+------------------------------+
+</code></pre>
+
+<h3 id="toc_6">4.通过Spring Suite Tool（Eclipse插件）构建（略）</h3>
+
+<h2 id="toc_7">构建后的项目目录结构</h2>
+
+<p><img src="media/14785139214429/14785203536210.jpg" alt=""/></p>
+
+<h3 id="toc_8">build.gradle</h3>
+
+<pre><code>buildscript {
+    ext {
+        springBootVersion = &#39;1.4.1.RELEASE&#39;
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath(&quot;org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}&quot;)
+    }
+}
+
+apply plugin: &#39;java&#39;
+apply plugin: &#39;eclipse&#39;
+apply plugin: &#39;spring-boot&#39;
+
+jar {
+    baseName = &#39;springbootinit&#39;
+    version = &#39;1.0&#39;
+}
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+
+dependencies {
+    compile(&#39;org.springframework.boot:spring-boot-starter-data-jpa&#39;)
+    compile(&#39;org.springframework.boot:spring-boot-starter-security&#39;)
+    compile(&#39;org.springframework.boot:spring-boot-starter-web&#39;)
+    testCompile(&#39;org.springframework.boot:spring-boot-starter-test&#39;)
+}
+
+</code></pre>
+
+<h3 id="toc_9">SpringbootinitApplication.java</h3>
+
+<pre><code>package com.tianhaox.springboot;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class SpringbootinitApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(SpringbootinitApplication.class, args);
+    }
+}
+
+</code></pre>
+
+<h3 id="toc_10">SpringbootinitApplicationTests.java</h3>
+
+<pre><code>package com.tianhaox.springboot;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+
+@RunWith(SpringRunner.class)
+@SpringBootTest
+public class SpringbootinitApplicationTests {
+
+    @Test
+    public void contextLoads() {
+    }
+
+}
+
+</code></pre>
+
+<h3 id="toc_11">src/main/resources/application.properties 空文件</h3>
+
+		</div>
+	</article>
+	<div class="share-comment">
+	 <div id="disqus_thread"></div>
+<script>
+(function() { // DON'T EDIT BELOW THIS LINE
+var d = document, s = d.createElement('script');
+s.src = '//tianhaox.disqus.com/embed.js';
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<!-- 多说评论框 start -->
+	<div class="ds-thread" ></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"tianhaox"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+
+	  
+
+	  
+
+	</div>
+</div>        </div>
+			<footer id="footer" class="inner">Copyright &copy; 2014
+Powered by <a target="_blank" href="http://www.mweb.im">MWeb</a> &nbsp;&nbsp; 
+Theme by <a href="http://shashankmehta.in/archive/2012/greyshade.html">Shashank Mehta</a>
+      </footer>
+		</div>
+	</div>
+
+  
+    
+<script src="asset/chart/all-min.js"></script><script type="text/javascript">$(function(){    var mwebii=0;    var mwebChartEleId = 'mweb-chart-ele-';    $('pre>code').each(function(){        mwebii++;        var eleiid = mwebChartEleId+mwebii;        if($(this).hasClass('language-sequence')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = Diagram.parse($(this).text());            diagram.drawSVG(eleiid,{theme: 'simple'});        }else if($(this).hasClass('language-flow')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = flowchart.parse($(this).text());            diagram.drawSVG(eleiid);        }    });});</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
+
+</body>
+</html>

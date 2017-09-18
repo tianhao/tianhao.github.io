@@ -1,0 +1,614 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>
+        
+        Spring Boot 深入Actuator - #(coding X)
+        
+    </title>
+
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="atom.xml" rel="alternate" title="#(coding X)" type="application/atom+xml">
+
+    <link href="asset/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+    <link href="asset/stylesheets/font-awesome.min.css" media="screen, projection" rel="stylesheet" type="text/css">
+    <script src="asset/javascripts/jquery.min.js"></script>
+    <script src="asset/highlightjs/highlight.pack.js"></script>
+    <link href="asset/highlightjs/styles/solarized_dark.css" media="screen, projection" rel="stylesheet" type="text/css">
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!--[if lt IE 9]><script src="asset/javascripts/html5.js"></script><![endif]-->
+    <!-- <link href='http://fonts.googleapis.com/css?family=Nunito:400,300,700' rel='stylesheet' type='text/css'> -->
+    <style type="text/css">
+        /* latin */
+        @font-face {
+            font-family: 'Nunito';
+            font-style: normal;
+            font-weight: 300;
+            src: local('Nunito-Light'), url(asset/font/1TiHc9yag0wq3lDO9cw0voX0hVgzZQUfRDuZrPvH3D8.woff2) format('woff2');
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+        }
+        /* latin */
+        @font-face {
+            font-family: 'Nunito';
+            font-style: normal;
+            font-weight: 400;
+            src: local('Nunito-Regular'), url(asset/font/6TbRXKWJjpj6V2v_WyRbMX-_kf6ByYO6CLYdB4HQE-Y.woff2) format('woff2');
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+        }
+        /* latin */
+        @font-face {
+            font-family: 'Nunito';
+            font-style: normal;
+            font-weight: 700;
+            src: local('Nunito-Bold'), url(asset/font/TttUCfJ272GBgSKaOaD7KoX0hVgzZQUfRDuZrPvH3D8.woff2) format('woff2');
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+        }
+    </style>
+
+    <style type="text/css">
+        .container .left-col{ opacity: 1;}
+        #pagenavi a{ font-size: 1.3em;}
+        #pagenavi .next:before{ top: 3px;}
+        #pagenavi .prev:before{ top: 3px;}
+        .container .mid-col .mid-col-container #content .archives .title{ font-size: 1.5em;}
+        .container .mid-col .mid-col-container #content article{ padding: 15px 0px;}
+        #header .subtitle {
+            line-height: 1.2em;
+            padding-top: 8px;
+        }
+        article pre{ background: none; border: none; padding: 0;}
+        article .entry-content{text-align: left;}
+        .share-comment{ padding: 25px 0px; clear: both;}
+        hr{ margin: 20px 0px;border: 0; border-top:solid 1px #ddd;}
+    </style>
+
+</head>
+
+<body>
+<div class="container">
+    <div class="left-col">
+        <div class="intrude-less">
+            <header id="header" class="inner">
+                
+                <div class="profilepic">
+                    <img src="asset/icon.png" style="width:160px;">
+                </div>
+                
+
+                <h1><a href="index.html">#(coding X)</a></h1>
+                <p class="subtitle">写代码，折腾各种好玩的东西！</p>
+                <nav id="main-nav">
+                    <ul class="main">
+                        
+                        <li id=""><a target="_self" href="index.html">Home</a></li>
+                        
+                        <li id=""><a target="_self" href="archives.html">Archives</a></li>
+                        
+                    </ul>
+                </nav>
+
+                <nav id="sub-nav">
+                    <div class="social">
+
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a target="_blank" class="weibo" href="http://weibo.com/liemi
+
+
+
+
+
+http://weibo.com/liemi" title="weibo">Weibo</a>
+                        <a target="_blank" class="twitter" target="_blank" href="https://twitter.com/tianhaox_com" title="Twitter">Twitter</a>
+                        <a target="_blank" class="github" target="_blank" href="https://github.com/tianhao" title="GitHub">GitHub</a>
+                        
+
+                        <a class="rss" href="atom.xml" title="RSS">RSS</a>
+
+                    </div>
+                </nav>
+                <br>
+                <div id="site-categories" class="side-item ">
+                    <div class="side-header">
+                        <h2>Categories</h2>
+                    </div>
+                    <div class="side-content">
+                        <p class="cat-list">
+                            
+                            <a href="Life.html"><strong>Life</strong></a>
+                            
+                            <a href="Spring.html"><strong>Spring</strong></a>
+                            
+                            <a href="Spring%20Boot.html"><strong>Spring Boot</strong></a>
+                            
+                        </p>
+                    </div>
+                </div>
+								<br>
+                <div id="site-categories" class="side-item">
+                    <div class="side-header">
+                        <h2>Recent Posts</h2>
+                    </div>
+                    <div class="side-content">
+                        <ul class="posts-list">
+                            
+                            
+                            <li class="post">
+                                <a href="14787505123542.html">SpringBoot 开发工具</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14786773151130.html">Spring Boot 发布</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14786335106268.html">Spring Boot 深入Actuator</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14785948397032.html">Spring Boot 自定义配置</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14785852868633.html">Spring Boot 开发第一个应用程序</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14785139214429.html">Spring Boot 入门：安装和构建</a>
+                            </li>
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                        </ul>
+                    </div>
+                </div>
+            </header>
+        </div> <!-- intrude-less -->
+    </div> <!-- left-col -->
+
+    <div class="mid-col">
+        <div class="mid-col-container">
+ <div id="content" class="inner">
+
+	<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+		<h1 class="title" itemprop="name">Spring Boot 深入Actuator</h1>
+		<div class="entry-content" itemprop="articleBody">
+			<h2 id="toc_0"><em>《Spring Boot实战》笔记 第7章</em></h2>
+
+<h2 id="toc_1">保护 Actuator</h2>
+
+<p><strong>改变端点位置</strong></p>
+
+<pre><code>management:
+    context-path: /mgnt
+</code></pre>
+
+<p><strong>为端点添加权限</strong></p>
+
+<pre><code>.antMatchers(&quot;/mgmt/**&quot;).access(&quot;hasRole(&#39;ADMIN&#39;)&quot;)
+.and()
+.inMemoryAuthentication()
+  .withUser(&quot;admin&quot;).password(&quot;s3cr3t&quot;)
+                    .roles(&quot;ADMIN&quot;,&quot;READER&quot;);
+</code></pre>
+
+<h2 id="toc_2">Actuator 提供的能力</h2>
+
+<table>
+<thead>
+<tr>
+<th>HTTP方法</th>
+<th>路径</th>
+<th>描述</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>GET</td>
+<td>/autoconfig</td>
+<td>自动配置报告，那些条件通过了，那些没通过。</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/configprops</td>
+<td>描述配置属性(包括默认值)如何注入Bean</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/beans</td>
+<td>全部Beans以及它们的关系</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/dump</td>
+<td>获取线程活动的快照</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/env</td>
+<td>获取全部环境属性</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/env/{name}</td>
+<td>获取指定名称的环境属性</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/health</td>
+<td>报告健康指标，由HealthIndicator实现类提供</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/info</td>
+<td>应用程序的指定信息</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/mappings</td>
+<td>全部URL路径以及对应控制器</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>metrics</td>
+<td>各种应用程序度量信息，如内存，HTTP请求计数</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>metrics/{name}</td>
+<td>获取指定名称的度量值</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>/shutdown</td>
+<td>关闭程序，要求endpoints.shutdown.enabled=true</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/trace</td>
+<td>基本的HTTP请求跟踪信息</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="toc_3">远程 Actuator</h2>
+
+<p><strong>添加remote-shell依赖</strong></p>
+
+<pre><code>    compile(&#39;org.springframework.boot:spring-boot-starter-remote-shell&#39;)
+</code></pre>
+
+<p>通过启动日志获取远程密码：<br/>
+Using default security password: 6af9a647-1d9d-4ade-a4ef-ae1813aa2301</p>
+
+<p><strong>链接远程Remote-shell</strong></p>
+
+<pre><code>ssh user@localhost -p 2000
+</code></pre>
+
+<p><strong>Remote-shell中可用的命令Actuator命令</strong><br/>
+1. autoconfig<br/>
+2. beans<br/>
+3. metrics 实时变化的metrics，类似top<br/>
+4. endpoint list 查看可选的端点<br/>
+5. endpoint invoke 端点名称</p>
+
+<pre><code class="language-shell">&gt; endpoint list
+requestMappingEndpoint
+environmentEndpoint
+healthEndpoint
+beansEndpoint
+infoEndpoint
+metricsEndpoint
+traceEndpoint
+dumpEndpoint
+autoConfigurationReportEndpoint
+configurationPropertiesReportEndpoint
+&gt; endpoint invoke info # infoEndpoint 的简写     
+{contact={email=support@example.com, phone=18888888888}}
+</code></pre>
+
+<h2 id="toc_4">制定 Actuator</h2>
+
+<p>通常做法：<br/>
+1. 修改端点id，替换默认的端点例如用 kill 替换 shutdown；<br/>
+2. 禁用所有端点，按需打开部分端点，例如只开启metrics：</p>
+
+<pre><code>endpoints:
+  enabled: false
+  metrics:
+      enabled: true
+  shutdown:
+    id: kill
+</code></pre>
+
+<h3 id="toc_5">应用程序生成指标并吐出给metrics</h3>
+
+<p><img src="media/14786335106268/14786643074252.jpg" alt=""/></p>
+
+<p>metrics有2个接口， 一个是计数服务接口（CounterService），一个是瞬时值服务接口（GaugeService），应用程序可以通过调用这2个接口api想metrics提交数据。</p>
+
+<pre><code>package org.springframework.boot.actuate.metrics;
+
+public interface CounterService {
+
+    void increment(String metricName);
+
+    void decrement(String metricName);
+
+    void reset(String metricName);
+
+}
+</code></pre>
+
+<pre><code>package org.springframework.boot.actuate.metrics;
+
+public interface GaugeService {
+
+    void submit(String metricName, double value);
+    
+}
+</code></pre>
+
+<pre><code>@Controller
+@RequestMapping(&quot;/&quot;)
+public class ReadingListController {
+    private AmazonProperties amazonConfig;
+    private ReadingListRepository readingListRepository;
+    private CounterService counterService;
+    private GaugeService gaugeService;
+
+    @Autowired
+    public ReadingListController(ReadingListRepository readingListRepository,
+                                 AmazonProperties amazonConfig,
+                                 CounterService counterService,
+                                 GaugeService gaugeService) {
+        this.readingListRepository = readingListRepository;
+        this.amazonConfig = amazonConfig;
+        this.readerRepository = readerRepository;
+        this.counterService = counterService;
+        this.gaugeService = gaugeService;
+    }
+
+    ...
+
+    @RequestMapping(method=RequestMethod.POST)
+    public String addToReadingList(Reader reader, Book book) {
+        book.setReader(reader);
+        counterService.increment(&quot;books.saved&quot;); // 累加图书保存数到metrics
+        gaugeService.submit(&quot;books.last.saved&quot;,System.currentTimeMillis()); // 记录最后保持时间到metrics
+        readingListRepository.save(book);
+        return &quot;redirect:/&quot;;
+    }
+    
+}
+
+</code></pre>
+
+<h3 id="toc_6">发布自定义指标信息</h3>
+
+<p>实现的接口：</p>
+
+<pre><code>package org.springframework.boot.actuate.endpoint;
+
+public interface PublicMetrics {
+
+    Collection&lt;Metric&lt;?&gt;&gt; metrics();
+}
+</code></pre>
+
+<p>实例：</p>
+
+<pre><code>package com.tianhaox.sbia.readinglist;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.endpoint.PublicMetrics;
+import org.springframework.boot.actuate.metrics.Metric;
+import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+/**
+ * Created by tianhao on 2016/11/9.
+ */
+@Component
+public class ApplicationContextMetrics implements PublicMetrics {
+
+    private ApplicationContext context;
+
+    @Autowired
+    public ApplicationContextMetrics(ApplicationContext context) {
+        this.context = context;
+    }
+
+    @Override
+    public Collection&lt;Metric&lt;?&gt;&gt; metrics() {
+        List&lt;Metric&lt;?&gt;&gt; metrics = new ArrayList&lt;&gt;();
+
+        metrics.add(new Metric&lt;Long&gt;(&quot;spring.context.startup-date&quot;, context.getStartupDate()));
+        metrics.add(new Metric&lt;Integer&gt;(&quot;spring.beans.definitions&quot;, context.getBeanDefinitionCount()));
+        metrics.add(new Metric&lt;Integer&gt;(&quot;spring.bean&quot;, context.getBeanNamesForType(Object.class).length));
+        metrics.add(new Metric&lt;Integer&gt;(&quot;spring.controllers&quot;, context.getBeanNamesForAnnotation(Controller.class).length));
+        return metrics;
+    }
+}
+</code></pre>
+
+<p><a href="http://localhost:8000/mgmt/metrics">http://localhost:8000/mgmt/metrics</a><br/>
+<img src="media/14786335106268/14786693876232.jpg" alt=""/></p>
+
+<h3 id="toc_7">增大trace信息最大值</h3>
+
+<p>默认保存最近100条的访问跟踪信息，如果要增大或缩小，覆盖掉默认的InMemoryTraceRepository Bean设置就好了：</p>
+
+<pre><code>package com.tianhaox.sbia.readinglist;
+
+import org.springframework.boot.actuate.trace.InMemoryTraceRepository;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * Created by tianhao on 2016/11/9.
+ */
+
+@Configuration
+public class ActuatorConfig {
+
+    @Bean
+    public InMemoryTraceRepository traceRepository(){
+        InMemoryTraceRepository traceRepo = new InMemoryTraceRepository();
+        traceRepo.setCapacity(1000);
+        return traceRepo;
+    }
+}
+
+</code></pre>
+
+<h3 id="toc_8">将trace信息存到MongoDB</h3>
+
+<p>虽然可以增加trace记录数最大值以保留更多的信息，但是不是一个优秀可靠的方案，可以将trace信息保存到数据库中，既节约内存也保证了数据不丢失。<br/>
+只需要实现 TraceRepository 接口的Bean， SpringBoot会自动调用该Bean存储数据。<br/>
+注意：内存保存和数据库保存只能使用一个，不能同时使用。</p>
+
+<pre><code>package org.springframework.boot.actuate.trace;
+
+public interface TraceRepository {
+    List&lt;Trace&gt; findAll();
+
+    void add(Map&lt;String, Object&gt; traceInfo);
+}
+</code></pre>
+
+<p>添加mongodb起步依赖：</p>
+
+<pre><code>    compile(&#39;org.springframework.boot:spring-boot-starter-data-mongodb&#39;)
+</code></pre>
+
+<p>实现接口TraceRepository 存储到MongoDB：</p>
+
+<pre><code>package com.tianhaox.sbia.readinglist;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.trace.Trace;
+import org.springframework.boot.actuate.trace.TraceRepository;
+import org.springframework.data.mongodb.core.MongoOperations;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Created by tianhao on 2016/11/9.
+ */
+public class MongoTraceRepository implements TraceRepository {
+
+    private MongoOperations mongoOps;
+
+    @Autowired
+    public MongoTraceRepository(MongoOperations mongoOps) {
+        this.mongoOps = mongoOps;
+    }
+
+
+    @Override
+    public List&lt;Trace&gt; findAll() {
+        return mongoOps.findAll(Trace.class);
+    }
+
+    @Override
+    public void add(Map&lt;String, Object&gt; traceInfo) {
+        mongoOps.save(new Trace(new Date(),traceInfo));
+    }
+}
+</code></pre>
+
+		</div>
+	</article>
+	<div class="share-comment">
+	 <div id="disqus_thread"></div>
+<script>
+(function() { // DON'T EDIT BELOW THIS LINE
+var d = document, s = d.createElement('script');
+s.src = '//tianhaox.disqus.com/embed.js';
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<!-- 多说评论框 start -->
+	<div class="ds-thread" ></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"tianhaox"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+
+	  
+
+	  
+
+	</div>
+</div>        </div>
+			<footer id="footer" class="inner">Copyright &copy; 2014
+Powered by <a target="_blank" href="http://www.mweb.im">MWeb</a> &nbsp;&nbsp; 
+Theme by <a href="http://shashankmehta.in/archive/2012/greyshade.html">Shashank Mehta</a>
+      </footer>
+		</div>
+	</div>
+
+  
+    
+<script src="asset/chart/all-min.js"></script><script type="text/javascript">$(function(){    var mwebii=0;    var mwebChartEleId = 'mweb-chart-ele-';    $('pre>code').each(function(){        mwebii++;        var eleiid = mwebChartEleId+mwebii;        if($(this).hasClass('language-sequence')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = Diagram.parse($(this).text());            diagram.drawSVG(eleiid,{theme: 'simple'});        }else if($(this).hasClass('language-flow')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = flowchart.parse($(this).text());            diagram.drawSVG(eleiid);        }    });});</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
+
+</body>
+</html>

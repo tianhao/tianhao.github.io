@@ -1,0 +1,577 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>
+        
+        Spring使用远程服务(1) —— 使用RMI - #(coding X)
+        
+    </title>
+
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="atom.xml" rel="alternate" title="#(coding X)" type="application/atom+xml">
+
+    <link href="asset/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+    <link href="asset/stylesheets/font-awesome.min.css" media="screen, projection" rel="stylesheet" type="text/css">
+    <script src="asset/javascripts/jquery.min.js"></script>
+    <script src="asset/highlightjs/highlight.pack.js"></script>
+    <link href="asset/highlightjs/styles/solarized_dark.css" media="screen, projection" rel="stylesheet" type="text/css">
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!--[if lt IE 9]><script src="asset/javascripts/html5.js"></script><![endif]-->
+    <!-- <link href='http://fonts.googleapis.com/css?family=Nunito:400,300,700' rel='stylesheet' type='text/css'> -->
+    <style type="text/css">
+        /* latin */
+        @font-face {
+            font-family: 'Nunito';
+            font-style: normal;
+            font-weight: 300;
+            src: local('Nunito-Light'), url(asset/font/1TiHc9yag0wq3lDO9cw0voX0hVgzZQUfRDuZrPvH3D8.woff2) format('woff2');
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+        }
+        /* latin */
+        @font-face {
+            font-family: 'Nunito';
+            font-style: normal;
+            font-weight: 400;
+            src: local('Nunito-Regular'), url(asset/font/6TbRXKWJjpj6V2v_WyRbMX-_kf6ByYO6CLYdB4HQE-Y.woff2) format('woff2');
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+        }
+        /* latin */
+        @font-face {
+            font-family: 'Nunito';
+            font-style: normal;
+            font-weight: 700;
+            src: local('Nunito-Bold'), url(asset/font/TttUCfJ272GBgSKaOaD7KoX0hVgzZQUfRDuZrPvH3D8.woff2) format('woff2');
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+        }
+    </style>
+
+    <style type="text/css">
+        .container .left-col{ opacity: 1;}
+        #pagenavi a{ font-size: 1.3em;}
+        #pagenavi .next:before{ top: 3px;}
+        #pagenavi .prev:before{ top: 3px;}
+        .container .mid-col .mid-col-container #content .archives .title{ font-size: 1.5em;}
+        .container .mid-col .mid-col-container #content article{ padding: 15px 0px;}
+        #header .subtitle {
+            line-height: 1.2em;
+            padding-top: 8px;
+        }
+        article pre{ background: none; border: none; padding: 0;}
+        article .entry-content{text-align: left;}
+        .share-comment{ padding: 25px 0px; clear: both;}
+        hr{ margin: 20px 0px;border: 0; border-top:solid 1px #ddd;}
+    </style>
+
+</head>
+
+<body>
+<div class="container">
+    <div class="left-col">
+        <div class="intrude-less">
+            <header id="header" class="inner">
+                
+                <div class="profilepic">
+                    <img src="asset/icon.png" style="width:160px;">
+                </div>
+                
+
+                <h1><a href="index.html">#(coding X)</a></h1>
+                <p class="subtitle">写代码，折腾各种好玩的东西！</p>
+                <nav id="main-nav">
+                    <ul class="main">
+                        
+                        <li id=""><a target="_self" href="index.html">Home</a></li>
+                        
+                        <li id=""><a target="_self" href="archives.html">Archives</a></li>
+                        
+                    </ul>
+                </nav>
+
+                <nav id="sub-nav">
+                    <div class="social">
+
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a target="_blank" class="weibo" href="http://weibo.com/liemi
+
+
+
+
+
+http://weibo.com/liemi" title="weibo">Weibo</a>
+                        <a target="_blank" class="twitter" target="_blank" href="https://twitter.com/tianhaox_com" title="Twitter">Twitter</a>
+                        <a target="_blank" class="github" target="_blank" href="https://github.com/tianhao" title="GitHub">GitHub</a>
+                        
+
+                        <a class="rss" href="atom.xml" title="RSS">RSS</a>
+
+                    </div>
+                </nav>
+                <br>
+                <div id="site-categories" class="side-item ">
+                    <div class="side-header">
+                        <h2>Categories</h2>
+                    </div>
+                    <div class="side-content">
+                        <p class="cat-list">
+                            
+                            <a href="Life.html"><strong>Life</strong></a>
+                            
+                            <a href="Spring.html"><strong>Spring</strong></a>
+                            
+                            <a href="Spring%20Boot.html"><strong>Spring Boot</strong></a>
+                            
+                        </p>
+                    </div>
+                </div>
+								<br>
+                <div id="site-categories" class="side-item">
+                    <div class="side-header">
+                        <h2>Recent Posts</h2>
+                    </div>
+                    <div class="side-content">
+                        <ul class="posts-list">
+                            
+                            
+                            <li class="post">
+                                <a href="14787505123542.html">SpringBoot 开发工具</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14786773151130.html">Spring Boot 发布</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14786335106268.html">Spring Boot 深入Actuator</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14785948397032.html">Spring Boot 自定义配置</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14785852868633.html">Spring Boot 开发第一个应用程序</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14785139214429.html">Spring Boot 入门：安装和构建</a>
+                            </li>
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                        </ul>
+                    </div>
+                </div>
+            </header>
+        </div> <!-- intrude-less -->
+    </div> <!-- left-col -->
+
+    <div class="mid-col">
+        <div class="mid-col-container">
+ <div id="content" class="inner">
+
+	<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+		<h1 class="title" itemprop="name">Spring使用远程服务(1) —— 使用RMI</h1>
+		<div class="entry-content" itemprop="articleBody">
+			<p><em>——《Spring实战》笔记 第15章</em></p>
+
+<p>RMI可以将本地接口封装成可远程调用的服务，客户端可以像调用本地接口一样调用封装后的服务。</p>
+
+<h2 id="toc_0">前提条件</h2>
+
+<ol>
+<li>客户端和服务端都必须是Java；</li>
+<li>RMI封装的接口返回的对象必须可序列化，否则抛异常，例如：<code>public class Spitter implements Serializable {...}</code> ；</li>
+<li>由于需要序列化，所以客户端和服务端要保证版本完全一致；</li>
+</ol>
+
+<h2 id="toc_1">1. 解决发布RMI服务时不能指定registryHost的坑（多网卡不能指定网卡，比如内网网卡）</h2>
+
+<p>参见： <a href="http://stackoverflow.com/questions/10094416/rmiserviceexporter-not-working-does-not-connect-to-rmi-localhost-at-port-1099">http://stackoverflow.com/questions/10094416/rmiserviceexporter-not-working-does-not-connect-to-rmi-localhost-at-port-1099</a></p>
+
+<pre><code class="language-Java">import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.RMIClientSocketFactory;
+import java.rmi.server.RMIServerSocketFactory;
+
+public class MyRmiServiceExporter extends RmiServiceExporter {
+
+    protected Registry getRegistry(String registryHost, int registryPort,
+                                   RMIClientSocketFactory clientSocketFactory, RMIServerSocketFactory serverSocketFactory)
+            throws RemoteException
+    {
+
+        if (registryHost != null) {
+            // Host explictly specified: only lookup possible.
+            if (logger.isInfoEnabled()) {
+                logger.info(&quot;Looking for RMI registry at port &#39;&quot; + registryPort + &quot;&#39; of host [&quot; + registryHost + &quot;]&quot;);
+            }
+            try {
+                Registry reg = LocateRegistry.getRegistry(registryHost, registryPort, clientSocketFactory);
+                testRegistry(reg);
+                return reg;
+            } catch (RemoteException ex) {
+                logger.debug(&quot;RMI registry access threw exception&quot;, ex);
+                logger.warn(&quot;Could not detect RMI registry - creating new one&quot;);
+                // Assume no registry found -&gt; create new one.
+                LocateRegistry.createRegistry(registryPort);
+                Registry reg = LocateRegistry.getRegistry(registryHost, registryPort, clientSocketFactory);
+                testRegistry(reg);
+                return reg;
+            }
+        } else {
+            return getRegistry(registryPort, clientSocketFactory, serverSocketFactory);
+        }
+    }
+}
+</code></pre>
+
+<h2 id="toc_2">2.定义服务接口</h2>
+
+<pre><code class="language-Java">public interface SpitterService {
+    List&lt;Spittle&gt; getRecentSpittles(int count);
+    void saveSpittle(Spittle spittle);
+    void saveSpitter(Spitter spitter);
+    Spitter getSpitter(long id);
+    void startFollowing(Spitter follower, Spitter followee);
+    List&lt;Spittle&gt; getSpittlesForSpitter(Spitter spitter);
+    List&lt;Spittle&gt; getSpittlesForSpitter(String username);
+    Spitter getSpitter(String username);
+    Spittle getSpittleById(long id);
+    void deleteSpittle(long id);
+    List&lt;Spitter&gt; getAllSpitters();
+}
+</code></pre>
+
+<h2 id="toc_3">3.发布服务 （XML方式）</h2>
+
+<p><strong>XML配置：</strong></p>
+
+<pre><code class="language-XML">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+       xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+       xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.0.xsd&quot;&gt;
+
+    &lt;!-- 注入要发布的RMI服务类 --&gt;
+    &lt;bean id=&quot;spitterService&quot; class=&quot;service.SpitterServiceImpl&quot;&gt;&lt;/bean&gt;
+
+    &lt;bean class=&quot;config.MyRmiServiceExporter&quot;&gt;
+        &lt;!-- RMI服务名称,可自定义服务名称 --&gt;
+        &lt;property name=&quot;serviceName&quot; value=&quot;SpitterService&quot; /&gt;
+        &lt;!-- 导出实体 --&gt;
+        &lt;property name=&quot;service&quot; ref=&quot;spitterService&quot; /&gt;
+        &lt;!-- 导出接口 --&gt;
+        &lt;property name=&quot;serviceInterface&quot; value=&quot;service.SpitterService&quot; /&gt;
+        &lt;!-- 只有使用MyRmiServiceExporter类是才有用, 使用默认类无效 --&gt;
+        &lt;property name=&quot;registryHost&quot; value=&quot;localhost&quot;/&gt;
+        &lt;!-- spring默认使用1099端口 --&gt;
+        &lt;property name=&quot;registryPort&quot; value=&quot;1199&quot; /&gt;
+
+        &lt;property name=&quot;alwaysCreateRegistry&quot; value=&quot;true&quot;/&gt;
+    &lt;/bean&gt;
+&lt;/beans&gt;
+</code></pre>
+
+<p><strong>启动RMI服务:</strong></p>
+
+<pre><code class="language-JAVA">import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+/**
+ * Created by tianhao on 16/9/25.
+ */
+public class ServerMainWithXml {
+    public static void main(String[] args) {
+        ApplicationContext ctx = new ClassPathXmlApplicationContext(&quot;server.xml&quot;);
+        System.out.println(&quot;已成功发布RMI服务类&quot;);
+    }
+}
+</code></pre>
+
+<h2 id="toc_4">4.客户端调用RMI服务  (XML方式)</h2>
+
+<p><strong>XML配置：</strong></p>
+
+<pre><code class="language-XML">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+       xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+       xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.0.xsd&quot;&gt;
+
+    &lt;bean id=&quot;spitterService&quot; class=&quot;org.springframework.remoting.rmi.RmiProxyFactoryBean&quot;&gt;
+        &lt;property name=&quot;serviceUrl&quot; value=&quot;rmi://localhost:1199/SpitterService&quot; /&gt;
+        &lt;property name=&quot;serviceInterface&quot; value=&quot;service.SpitterService&quot; /&gt;
+    &lt;/bean&gt;
+&lt;/beans&gt;
+</code></pre>
+
+<p><strong>启动客户端：</strong></p>
+
+<pre><code class="language-JAVA">
+import model.Spitter;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import service.SpitterService;
+
+/**
+ * Created by tianhao on 16/9/25.
+ */
+public class ClientMainWithXml {
+
+    public static void main(String[] args) {
+        ApplicationContext ctx = new ClassPathXmlApplicationContext(&quot;client.xml&quot;);
+        System.out.println(&quot;加载Spring容器,并初始化RMI客户端&quot;);
+        SpitterService spitterService = (SpitterService) ctx.getBean(&quot;spitterService&quot;);
+        Spitter spitter = spitterService.getSpitter(1);
+        System.out.println(&quot;返回结果:&quot; + spitter.toString());
+    }
+}
+</code></pre>
+
+<h2 id="toc_5">5. 发布服务 （JavaConfig方式）</h2>
+
+<p><strong>配置类：</strong></p>
+
+<pre><code class="language-JAVA">package config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import service.SpitterService;
+import service.SpitterServiceImpl;
+
+/**
+ * Created by tianhao on 16/9/25.
+ */
+@Configuration
+public class RMIServerConfig {
+
+    @Bean
+    public SpitterService spitterService(){
+        return new SpitterServiceImpl();
+    }
+
+    @Bean
+    public MyRmiServiceExporter rmiExporter(SpitterService spitterService){
+        MyRmiServiceExporter rmiExporter = new MyRmiServiceExporter();
+        rmiExporter.setService(spitterService);
+        rmiExporter.setServiceName(&quot;SpitterService&quot;);
+        rmiExporter.setRegistryHost(&quot;127.0.0.1&quot;);
+        rmiExporter.setRegistryPort(1199);
+        rmiExporter.setServiceInterface(SpitterService.class);
+        return rmiExporter;
+    }
+
+}
+</code></pre>
+
+<p><strong>启动RMI服务：</strong></p>
+
+<pre><code class="language-JAVA">import config.RMIServerConfig;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
+/**
+ * Created by tianhao on 16/9/25.
+ */
+public class ServerMainWithJavaConfig {
+
+    public static void main(String[] args) {
+        ApplicationContext ctx =
+                new AnnotationConfigApplicationContext(RMIServerConfig.class);
+        System.out.println(&quot;已成功发布RMI服务类&quot;);
+    }
+}
+</code></pre>
+
+<h2 id="toc_6">6.客户端调用RMI服务  (JavaConfig方式)</h2>
+
+<p><strong>配置类：</strong></p>
+
+<pre><code class="language-JAVA">package config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.remoting.rmi.RmiProxyFactoryBean;
+import service.SpitterService;
+
+/**
+ * Created by tianhao on 16/9/25.
+ */
+public class RMIClientConfig {
+
+    @Bean
+    public RmiProxyFactoryBean spitterService() {
+        RmiProxyFactoryBean rmiProxy = new RmiProxyFactoryBean();
+        rmiProxy.setServiceUrl(&quot;rmi://localhost:1199/SpitterService&quot;);
+        rmiProxy.setServiceInterface(SpitterService.class);
+        return rmiProxy;
+    }
+}
+</code></pre>
+
+<p><strong>调用RMI服务：</strong></p>
+
+<pre><code class="language-JAVA">import config.RMIClientConfig;
+import model.Spitter;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import service.SpitterService;
+
+/**
+ * Created by tianhao on 16/9/25.
+ */
+public class ClientMainWithJavaConfig {
+
+    public static void main(String[] args) {
+        ApplicationContext ctx = new AnnotationConfigApplicationContext(RMIClientConfig.class);
+        System.out.println(&quot;加载Spring容器,并初始化RMI客户端&quot;);
+        SpitterService spitterService = (SpitterService) ctx.getBean(&quot;spitterService&quot;);
+        Spitter spitter = spitterService.getSpitter(1);
+        System.out.println(&quot;返回结果:&quot; + spitter.toString());
+    }
+}
+</code></pre>
+
+<h2 id="toc_7">7.踩坑总结</h2>
+
+<ol>
+<li>如果要指定网卡，即设置registryHost参数，需使用1中的解决办法，否则异常；</li>
+<li>接口返回的对象要实现 Serializable，虽然仅仅是<code>implements Serializable</code>一下。</li>
+</ol>
+
+<h2 id="toc_8">8.附上项目Gradle配置</h2>
+
+<p><strong>build.gradle</strong></p>
+
+<pre><code class="language-Gradle">apply plugin: &#39;eclipse&#39;
+apply plugin: &#39;war&#39;
+apply plugin: &#39;eclipse-wtp&#39;
+
+dependencies {
+    compile &quot;org.springframework:spring-webmvc:4.3.1.RELEASE&quot;
+    compile &quot;org.springframework:spring-jdbc:4.3.1.RELEASE&quot;
+    compile &quot;org.apache.commons:commons-lang3:3.1&quot;
+
+    testCompile &quot;junit:junit-dep:4.11&quot;
+    testCompile &quot;org.springframework:spring-test:4.3.1.RELEASE&quot;
+    testCompile &quot;org.mockito:mockito-core:1.9.5&quot;
+    testCompile &quot;org.hamcrest:hamcrest-library:1.3&quot;
+}
+
+repositories {
+    maven { url &#39;http://maven.springframework.org/release&#39; }
+    maven { url &#39;http://maven.springframework.org/milestone&#39; }
+    maven { url &#39;http://maven.springframework.org/snapshot&#39; }
+    maven { url &#39;http://download.java.net/maven/2&#39; }
+    mavenCentral()
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = &#39;1.8&#39;
+}
+
+war {
+    baseName = &#39;service&#39;
+}
+
+eclipse {
+    wtp {
+        component {
+            contextPath = &#39;service&#39;
+        }
+    }
+}
+</code></pre>
+
+<p><strong>settings.gradle</strong></p>
+
+<pre><code>rootProject.name = &#39;RMI&#39;
+</code></pre>
+
+		</div>
+	</article>
+	<div class="share-comment">
+	 <div id="disqus_thread"></div>
+<script>
+(function() { // DON'T EDIT BELOW THIS LINE
+var d = document, s = d.createElement('script');
+s.src = '//tianhaox.disqus.com/embed.js';
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<!-- 多说评论框 start -->
+	<div class="ds-thread" ></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"tianhaox"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+
+	  
+
+	  
+
+	</div>
+</div>        </div>
+			<footer id="footer" class="inner">Copyright &copy; 2014
+Powered by <a target="_blank" href="http://www.mweb.im">MWeb</a> &nbsp;&nbsp; 
+Theme by <a href="http://shashankmehta.in/archive/2012/greyshade.html">Shashank Mehta</a>
+      </footer>
+		</div>
+	</div>
+
+  
+    
+<script src="asset/chart/all-min.js"></script><script type="text/javascript">$(function(){    var mwebii=0;    var mwebChartEleId = 'mweb-chart-ele-';    $('pre>code').each(function(){        mwebii++;        var eleiid = mwebChartEleId+mwebii;        if($(this).hasClass('language-sequence')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = Diagram.parse($(this).text());            diagram.drawSVG(eleiid,{theme: 'simple'});        }else if($(this).hasClass('language-flow')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = flowchart.parse($(this).text());            diagram.drawSVG(eleiid);        }    });});</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
+
+</body>
+</html>

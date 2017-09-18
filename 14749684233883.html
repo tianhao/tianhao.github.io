@@ -1,0 +1,501 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>
+        
+        Spring REST API (1) 服务端 - #(coding X)
+        
+    </title>
+
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="atom.xml" rel="alternate" title="#(coding X)" type="application/atom+xml">
+
+    <link href="asset/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+    <link href="asset/stylesheets/font-awesome.min.css" media="screen, projection" rel="stylesheet" type="text/css">
+    <script src="asset/javascripts/jquery.min.js"></script>
+    <script src="asset/highlightjs/highlight.pack.js"></script>
+    <link href="asset/highlightjs/styles/solarized_dark.css" media="screen, projection" rel="stylesheet" type="text/css">
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!--[if lt IE 9]><script src="asset/javascripts/html5.js"></script><![endif]-->
+    <!-- <link href='http://fonts.googleapis.com/css?family=Nunito:400,300,700' rel='stylesheet' type='text/css'> -->
+    <style type="text/css">
+        /* latin */
+        @font-face {
+            font-family: 'Nunito';
+            font-style: normal;
+            font-weight: 300;
+            src: local('Nunito-Light'), url(asset/font/1TiHc9yag0wq3lDO9cw0voX0hVgzZQUfRDuZrPvH3D8.woff2) format('woff2');
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+        }
+        /* latin */
+        @font-face {
+            font-family: 'Nunito';
+            font-style: normal;
+            font-weight: 400;
+            src: local('Nunito-Regular'), url(asset/font/6TbRXKWJjpj6V2v_WyRbMX-_kf6ByYO6CLYdB4HQE-Y.woff2) format('woff2');
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+        }
+        /* latin */
+        @font-face {
+            font-family: 'Nunito';
+            font-style: normal;
+            font-weight: 700;
+            src: local('Nunito-Bold'), url(asset/font/TttUCfJ272GBgSKaOaD7KoX0hVgzZQUfRDuZrPvH3D8.woff2) format('woff2');
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+        }
+    </style>
+
+    <style type="text/css">
+        .container .left-col{ opacity: 1;}
+        #pagenavi a{ font-size: 1.3em;}
+        #pagenavi .next:before{ top: 3px;}
+        #pagenavi .prev:before{ top: 3px;}
+        .container .mid-col .mid-col-container #content .archives .title{ font-size: 1.5em;}
+        .container .mid-col .mid-col-container #content article{ padding: 15px 0px;}
+        #header .subtitle {
+            line-height: 1.2em;
+            padding-top: 8px;
+        }
+        article pre{ background: none; border: none; padding: 0;}
+        article .entry-content{text-align: left;}
+        .share-comment{ padding: 25px 0px; clear: both;}
+        hr{ margin: 20px 0px;border: 0; border-top:solid 1px #ddd;}
+    </style>
+
+</head>
+
+<body>
+<div class="container">
+    <div class="left-col">
+        <div class="intrude-less">
+            <header id="header" class="inner">
+                
+                <div class="profilepic">
+                    <img src="asset/icon.png" style="width:160px;">
+                </div>
+                
+
+                <h1><a href="index.html">#(coding X)</a></h1>
+                <p class="subtitle">写代码，折腾各种好玩的东西！</p>
+                <nav id="main-nav">
+                    <ul class="main">
+                        
+                        <li id=""><a target="_self" href="index.html">Home</a></li>
+                        
+                        <li id=""><a target="_self" href="archives.html">Archives</a></li>
+                        
+                    </ul>
+                </nav>
+
+                <nav id="sub-nav">
+                    <div class="social">
+
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a target="_blank" class="weibo" href="http://weibo.com/liemi
+
+
+
+
+
+http://weibo.com/liemi" title="weibo">Weibo</a>
+                        <a target="_blank" class="twitter" target="_blank" href="https://twitter.com/tianhaox_com" title="Twitter">Twitter</a>
+                        <a target="_blank" class="github" target="_blank" href="https://github.com/tianhao" title="GitHub">GitHub</a>
+                        
+
+                        <a class="rss" href="atom.xml" title="RSS">RSS</a>
+
+                    </div>
+                </nav>
+                <br>
+                <div id="site-categories" class="side-item ">
+                    <div class="side-header">
+                        <h2>Categories</h2>
+                    </div>
+                    <div class="side-content">
+                        <p class="cat-list">
+                            
+                            <a href="Life.html"><strong>Life</strong></a>
+                            
+                            <a href="Spring.html"><strong>Spring</strong></a>
+                            
+                            <a href="Spring%20Boot.html"><strong>Spring Boot</strong></a>
+                            
+                        </p>
+                    </div>
+                </div>
+								<br>
+                <div id="site-categories" class="side-item">
+                    <div class="side-header">
+                        <h2>Recent Posts</h2>
+                    </div>
+                    <div class="side-content">
+                        <ul class="posts-list">
+                            
+                            
+                            <li class="post">
+                                <a href="14787505123542.html">SpringBoot 开发工具</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14786773151130.html">Spring Boot 发布</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14786335106268.html">Spring Boot 深入Actuator</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14785948397032.html">Spring Boot 自定义配置</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14785852868633.html">Spring Boot 开发第一个应用程序</a>
+                            </li>
+                            
+                            
+                            
+                            <li class="post">
+                                <a href="14785139214429.html">Spring Boot 入门：安装和构建</a>
+                            </li>
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                        </ul>
+                    </div>
+                </div>
+            </header>
+        </div> <!-- intrude-less -->
+    </div> <!-- left-col -->
+
+    <div class="mid-col">
+        <div class="mid-col-container">
+ <div id="content" class="inner">
+
+	<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+		<h1 class="title" itemprop="name">Spring REST API (1) 服务端</h1>
+		<div class="entry-content" itemprop="articleBody">
+			<p><em>——《Spring实战》笔记 第16章</em></p>
+
+<h2 id="toc_0">用 @RestController 替代 @Controller + @ResponseBody</h2>
+
+<p>如果一个类所有的接口都不是返回视图的，都是返回数据的，用@RestController 替代 @Controller，可以省去类中大量的  @ResponseBody 注解。</p>
+
+<h2 id="toc_1">强大的 @RequestMapping 注解</h2>
+
+<h3 id="toc_2">1. value 指定接口地址</h3>
+
+<p>value指定接口地址，可用在 Controller类和 Controller类的public方法中，类和方法有层级关系，即最终地址是 “类的value/方法的value”， 如果类上面没有指定value，最终地址是“/方法的value”。</p>
+
+<p>常用示例：</p>
+
+<pre><code class="language-JAVA">@RequestMapping(value = &quot;spitter&quot;)
+@RequestMapping(value = &quot;spitter/{id}&quot;)   // 使用id占位符
+
+/*
+ * 使用多个占位符，且参数d使用{c}占位符
+ * http://localhost:8080/spitter/1/2/3
+ */
+@RequestMapping(value = &quot;spitter/{a}/{b}/{c}&quot;)
+public Map spitter(@PathVariable(&quot;a&quot;) String a, 
+                       @PathVariable(&quot;b&quot;) String b, 
+                       @PathVariable(&quot;c&quot;) String d) {
+    Map&lt;String,String&gt; m = new HashMap();
+    m.put(&quot;a&quot;, a);
+    m.put(&quot;b&quot;, b);
+    m.put(&quot;c&quot;, d);
+    return m;
+}
+</code></pre>
+
+<p>使用占位符时，要使用 <code>@PathVariable(value=&quot;id&quot;)</code>修饰方法中的某个参数，如果@PathVariable没有指定value, Spring 会根据参数名称匹配占位符，但是还是设置比较安全，笔者曾用相同的代码和配置，遇到在Mac下可以匹配但是Linux下不匹配的情况，导致了在Linux下接口不可用错误。</p>
+
+<h3 id="toc_3">2. method 指定接受的Request Method（对应 HTTP Request Method ）</h3>
+
+<p>常用示例：</p>
+
+<pre><code>// 接受所有method的请求
+@RequestMapping(value = &quot;getSpitter&quot;)  
+or
+// 只接受get的请求
+@RequestMapping(value = &quot;getSpitter&quot;, method = RequestMethod.GET) 
+or
+// 只接受post的请求
+@RequestMapping(value = &quot;getSpitter&quot;, method = RequestMethod.POST) 
+or
+// 只接受get和post的请求
+@RequestMapping(value = &quot;getSpitter&quot;, method = {RequestMethod.GET, RequestMethod.POST})
+</code></pre>
+
+<ol>
+<li>不指定method时，默认接受所有类型的请求；</li>
+<li>在一个RequestMapping中可以指定一个或多个method类型，指定之后的接口（方法）只接受指定类型（范围）的请求；</li>
+<li>对于相同的value, 可以用一个方法处理所有method类型的请求， 也可以拆成多个方法分别处理部分类型的method请求，Spring会将相应的method的请求指派到对应的方法处理，但是要注意，多个方法的method集合不能有交集，否则，程序初始化时不会发现，在收到请求后Spring才会抛出异常<code>HTTP Status 500 - Request processing failed; nested exception is java.lang.IllegalStateException: Ambiguous handler methods mapped for HTTP path ...</code>。</li>
+<li>Spring会指定符合请求method类型的方法处理请求，如果没有符合条件的会报404错误，而且是由Spring框架抛出异常，不会流转到接口方法中。</li>
+</ol>
+
+<h3 id="toc_4">3. produces 指定返回形式（对应HTTP Accept）</h3>
+
+<p>常用示例:</p>
+
+<pre><code>// 不指定，根据其它条件决定返回形式
+@RequestMapping(value = &quot;xmlSpitter&quot;) 
+// 指定xml
+@RequestMapping(value = &quot;xmlSpitter&quot;, produces = &quot;application/xml&quot;)
+// 指定json
+@RequestMapping(value = &quot;jsonSpitter&quot;, produces = &quot;application/json&quot;)
+// 指定3个，优先第一个
+@RequestMapping(value = &quot;multiSpitter&quot;, produces = {&quot;application/json&quot;, &quot;application/xml&quot;,  &quot;text/plain&quot;})
+</code></pre>
+
+<p>Http 请求的Accept 由A/B 两部分组成。A有：application、text、image。B有很多种，常用的有：json，xml，html，plain，有时还带版本号。由A和B可以产生很多组合，但是我们程序最终返回形式一般由B部分决定。</p>
+
+<p>produces是为了指定接口返回数据的形式而存在的，有以下规则：</p>
+
+<ol>
+<li>不指定produces时，Spring使用自有的一套规则决定将接口对应的方法返回的对象序列化成对应的形式，决定因素有接口后缀、请求的Accept类型等等。
+
+<ol>
+<li>接口后缀为json时返回json；</li>
+<li>接口后缀.xml返回xml形式;</li>
+<li>Accept的B是xml时序列化成XML形式</li>
+<li>当Accept的B是json时序列化成json形式。</li>
+</ol></li>
+<li>使用produces可以指定一个或多个类型，当指定produces时，指定接口只会返回指定范围的形式，当指定多个形式时，指定顺序会影响优先级，其它影响因素相同的情况下，优先返回第一个；</li>
+<li>当Spring决定返回某种形式时，在classpath中必须有指定类型的序列化库，开发者可以为Spring指定序列化库，如果没有指定，Spring会根据框架中的指定的常用序列化库查找classpath的库，使用找到的库序列化，如果没找到就抛出异常。PS:JDK6开始自带了XML系列化库JAXB，不需要增加依赖包。</li>
+<li>当决定返回xml形式时，返回的对象的类要有@XmlRootElement/@XmlElement之类的注解，使用注解时至少要有@XmlRootElement注解，另外，如果类中有@XmlRootElement注解，会将返回xml形式的优先级提高（经试验，如果没有指定produces，而类中有这个注解，会默认返回xml形式,否则返回json）。</li>
+</ol>
+
+<h3 id="toc_5">4. consumes + @RequestBody 指定request body类型 (对应HTTP Content-Type)</h3>
+
+<p>常用示例：</p>
+
+<pre><code>// 一个方法处理多个Content-Type请求
+@RequestMapping(value = &quot;consumesJsonOrXmlSpitter&quot;,
+            consumes = {&quot;application/json&quot;, &quot;application/xml&quot;},
+            method = RequestMethod.POST)
+public Spitter consumesJsonOrXmlSpitter(@RequestBody Spitter spitter) {
+    return spitter;
+}
+
+or
+
+// 分成多个方法，分别处理部分Content-Type请求, 但是不能有重叠（交集）
+@RequestMapping(value = &quot;consumesJsonSpitter&quot;, consumes = {&quot;application/json&quot;})
+public Spitter consumesJsonSpitter(@RequestBody Spitter spitter) {
+    return spitter;
+}
+
+@RequestMapping(value = &quot;consumesXmlSpitter&quot;, consumes = {&quot;application/xml&quot;})
+public Spitter consumesXmlSpitter(@RequestBody Spitter spitter) {
+    return spitter;
+}
+</code></pre>
+
+<p>这个例子可以通过设置请求的 Accept 和 Content-Type 将一种类型转化成另一种类型</p>
+
+<ol>
+<li>默认情况下接口只接受也只能解析 text类型的请求参数，类似于<code>a=x&amp;b=y&amp;...</code>；</li>
+<li>使用 consumes 可以设置接口只接受一个或多个类型的Content-Type，并且要使用@RequestBody注解某个参数，使得请求参数被反系列化到指定参数中；</li>
+<li>要注意，<strong>实际请求有多余的参数，即有些参数在接受参数的类中找不到对应的属性，会抛出异常400 - Bad Request 错误</strong>， 而如果不用consumes + @RequestBody组合，<strong>而用默认的参数绑定，会忽略掉多余的参数，不会抛出异常，程序会处理请求</strong>；</li>
+<li>跟 method 一样，相同的@RequestMapping value 可以由一个方法处理所有类型的Content-Type,也可以拆分成多个方法分别处理部分的Content-Type, 但是拆分的方法Content-Type集合不能有交集。</li>
+</ol>
+
+<h2 id="toc_6">用 @ExceptionHandler + @ResponseStatus 统一异常处理</h2>
+
+<p><strong>首先定义异常信息类</strong></p>
+
+<pre><code class="language-JAVA">public class ErrorInfo {
+
+    private int code;
+    private String message;
+
+    public ErrorInfo(int code, String message){
+        this.code = code;
+        this.message = message;
+    }
+
+    public int getCode() {
+        return code;
+    }
+
+    public void setCode(int code) {
+        this.code = code;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+}
+</code></pre>
+
+<p><strong>自定义异常类</strong></p>
+
+<pre><code class="language-JAVA">public class SpittleNotFoundException extends RuntimeException {
+    private long spittleId;
+
+    public SpittleNotFoundException(long spittleId) {
+        this.spittleId = spittleId;
+    }
+
+    public long getSpittleId() {
+        return spittleId;
+    }
+}
+</code></pre>
+
+<p><strong>在控制类中使用统一异常处理</strong></p>
+
+<pre><code class="language-JAVA">    // 为本控制类添加异常处理方法
+    @ExceptionHandler(SpittleNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)  // 设置返回码，默认是200
+    @ResponseBody // 如果要返回视图，则不要增加这行注解
+    public ErrorInfo spittleNotFound(SpittleNotFoundException e) {
+        long spittleid = e.getSpittleId();
+        return new ErrorInfo(4, &quot;Spitter [&quot; + spittleid + &quot;] not found!&quot;);
+    }
+
+    @RequestMapping(&quot;mode2/{id}&quot;)
+    @ResponseBody
+    public Spittle findById2(@PathVariable(&quot;id&quot;) long id) {
+        if (id &gt; 1) {
+            throw new SpittleNotFoundException(id); // 抛出异常,由异常处理方法处理
+        }
+        return spitterService.getSpittle(id);
+    }
+</code></pre>
+
+<h2 id="toc_7">使用 ResponseEntity 处理异常、设置返回码和设置返回headers</h2>
+
+<ol>
+<li>ResponseEntity可以在返回对象时设置返回码；</li>
+<li>使用ResponseEntity 默认是返回数据而不是试图，可以省去 @ResponseBody 注解，加了注解也没问题；</li>
+<li>该方法相对 @ExceptionHandler + @ResponseStatus 的方法没有优势，反而在方法的返回类型中增加了ResponseEntity&lt;?或类名&gt;，一般不使用这种方法处理异常； </li>
+<li>在新增资源时，为了更好的跟客户端交流，返回码可设置为HttpStatus.CREATED(201)，这个可以通过 @ResponseStatus 注解做到，但是如果要设置返回 headers，需要用 ResponseEntity才能做到，这才是 ResponseEntity 不可替代的地方。</li>
+</ol>
+
+<p><strong>处理异常示例</strong></p>
+
+<pre><code class="language-JAVA">    // 为本控制类添加异常处理方法
+    @ExceptionHandler(SpittleNotFoundException.class)
+    public ResponseEntity&lt;ErrorInfo&gt; spittleNotFound(SpittleNotFoundException e) {
+        long spittleid = e.getSpittleId();
+        ErrorInfo error = new ErrorInfo(4, &quot;Spitter [&quot; + spittleid + &quot;] not found!&quot;);
+        return new ResponseEntity&lt;ErrorInfo&gt;(error, HttpStatus.NOT_FOUND);
+    }
+
+
+    @RequestMapping(&quot;mode2/{id}&quot;)
+    public ResponseEntity&lt;?&gt; findById2(@PathVariable(&quot;id&quot;) long id) {
+        if (id &gt; 1) {
+            throw new SpittleNotFoundException(id); // 抛出异常,由异常处理方法
+        }
+        return new ResponseEntity&lt;Spittle&gt;(spitterService.getSpittle(id), HttpStatus.OK);
+    }
+</code></pre>
+
+<p><strong>设置返回的headers</strong><br/>
+在新增资源时，为了更好的跟客户端交流，返回码可设置为HttpStatus.CREATED(201)，这个可以通过 @ResponseStatus 注解做到，但是如果要设置返回 headers，需要用 ResponseEntity才能做到</p>
+
+<pre><code class="language-JAVA">    @RequestMapping(value = &quot;save&quot;, consumes = &quot;application/json&quot;)
+    public ResponseEntity&lt;Spittle&gt; save(@RequestBody Spittle spittle, UriComponentsBuilder ucb) {
+        spittle = spitterService.saveSpittle(spittle);
+        HttpHeaders headers = new HttpHeaders();
+        URI locationUri =
+                ucb.path(&quot;/spittles/&quot;)
+                .path(String.valueOf(spittle.getId()))
+                .build()
+                .toUri();
+        headers.setLocation(locationUri);
+
+        return new ResponseEntity&lt;Spittle&gt;(spittle,headers, HttpStatus.CREATED);
+    }
+</code></pre>
+
+		</div>
+	</article>
+	<div class="share-comment">
+	 <div id="disqus_thread"></div>
+<script>
+(function() { // DON'T EDIT BELOW THIS LINE
+var d = document, s = d.createElement('script');
+s.src = '//tianhaox.disqus.com/embed.js';
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<!-- 多说评论框 start -->
+	<div class="ds-thread" ></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"tianhaox"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+
+	  
+
+	  
+
+	</div>
+</div>        </div>
+			<footer id="footer" class="inner">Copyright &copy; 2014
+Powered by <a target="_blank" href="http://www.mweb.im">MWeb</a> &nbsp;&nbsp; 
+Theme by <a href="http://shashankmehta.in/archive/2012/greyshade.html">Shashank Mehta</a>
+      </footer>
+		</div>
+	</div>
+
+  
+    
+<script src="asset/chart/all-min.js"></script><script type="text/javascript">$(function(){    var mwebii=0;    var mwebChartEleId = 'mweb-chart-ele-';    $('pre>code').each(function(){        mwebii++;        var eleiid = mwebChartEleId+mwebii;        if($(this).hasClass('language-sequence')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = Diagram.parse($(this).text());            diagram.drawSVG(eleiid,{theme: 'simple'});        }else if($(this).hasClass('language-flow')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = flowchart.parse($(this).text());            diagram.drawSVG(eleiid);        }    });});</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
+
+</body>
+</html>

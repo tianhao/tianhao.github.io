@@ -1,0 +1,3461 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[#(coding X)]]></title>
+  <link href="tianhaox.com/atom.xml" rel="self"/>
+  <link href="tianhaox.com/"/>
+  <updated>2017-09-19T01:12:44+08:00</updated>
+  <id>tianhaox.com/</id>
+  <author>
+    <name><![CDATA[]]></name>
+    
+  </author>
+  <generator uri="http://www.coderforart.com/">CoderForArt</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[SpringBoot 开发工具]]></title>
+    <link href="tianhaox.com/14787505123542.html"/>
+    <updated>2016-11-10T12:01:52+08:00</updated>
+    <id>tianhaox.com/14787505123542.html</id>
+    <content type="html"><![CDATA[
+<h2 id="toc_0"><em>《Spring Boot实战》笔记 附录</em></h2>
+
+<h2 id="toc_1">devtools</h2>
+
+<p><strong>添加依赖</strong></p>
+
+<pre><code>    compile(&#39;org.springframework.boot:spring-boot-devtools&#39;)
+</code></pre>
+
+<p><strong>devtools提供了以下功能</strong></p>
+
+<ol>
+<li>自动重启：当Classpath里的文件发生变化时，自动重启运行中的应用程序；</li>
+<li>LiveReload支持（内嵌在了devtools中）：对资源的修改自动触发浏览器刷新，要求浏览器安装LiveReload插件；</li>
+<li>远程开发：远程部署时支持自动重启核LiveReload；</li>
+<li>默认的开发时属性值：为一些属性提供有意义的默认开发时属性值。</li>
+<li>当应用程序一完整大包好的JAR或WAR文件运行时，开发者工具会被禁用，所以没有必要在构建生产部署包钱移除这个依赖。</li>
+</ol>
+
+<p><strong>自动重启</strong><br/>
+Thymeleaf这样的视图模版可以直接编辑不需要重启，开发者工具自动排除掉的目录：<br/>
+* /static<br/>
+* /public<br/>
+* /templates<br/>
+* /META-INF/resources<br/>
+* /resources</p>
+
+<p><strong>LiveReload</strong><br/>
+Spring Boot 会内嵌一个LiveReload服务器，在资源文件发生变化时子触发浏览器刷新，但是要求安装浏览器安装 LiveReload插件</p>
+
+<p><strong>覆盖默认配置</strong></p>
+
+<pre><code class="language-YML">spring:
+  devtools:
+    restart:
+      enabled: true
+      exclude: /static**,/templates/**
+      trigger-file: .trigger
+    livereload:
+      enabled: true
+</code></pre>
+
+<p><strong>远程开发</strong>（略）</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Spring Boot 发布]]></title>
+    <link href="tianhaox.com/14786773151130.html"/>
+    <updated>2016-11-09T15:41:55+08:00</updated>
+    <id>tianhaox.com/14786773151130.html</id>
+    <content type="html"><![CDATA[
+<h2 id="toc_0"><em>《Spring Boot实战》笔记 第8章</em></h2>
+
+<h2 id="toc_1">使用 Redis 共享 session</h2>
+
+<p>参考： <a href="http://docs.spring.io/spring-session/docs/current/reference/html5/guides/boot.html">http://docs.spring.io/spring-session/docs/current/reference/html5/guides/boot.html</a></p>
+
+<p>添加依赖</p>
+
+<pre><code>    compile(&#39;org.springframework.boot:spring-boot-starter-redis&#39;)
+    compile(&#39;org.springframework.session:spring-session:1.2.2.RELEASE&#39;)
+</code></pre>
+
+<p>redis 配置，其实单机不需要显式配置redis，但是是跨主机跨应用共享session默认配置就不正确了。</p>
+
+<pre><code>spring:
+    main:
+      banner-mode: off
+    redis:
+      host: redis-server
+      port: 6379
+      database: 15
+</code></pre>
+
+<p>启用Redis共享session，测试发现， 没有这个类也没启用了共享session</p>
+
+<pre><code>@EnableRedisHttpSession
+public class HttpSessionConfig {
+}
+</code></pre>
+
+<p>注意：经测试，前面加上 @ConditionalOnProperty 或 @ConditionalOnExpression 注解并不能阻止启动Redis Session共享：</p>
+
+<pre><code>//@ConditionalOnProperty(name = &quot;session.shared&quot;, havingValue = &quot;true&quot;)
+@ConditionalOnExpression(&quot;&#39;${session.shared}&#39;==&#39;true&#39;&quot;)
+@EnableRedisHttpSession
+public class HttpSessionConfig {
+}
+</code></pre>
+
+<p>经上面测试和观察 /autoconfig RedisSession成功配置条件：<br/>
+<img src="media/14786773151130/14786811492194.jpg" alt=""/></p>
+
+<p>能够阻止redis共享session的是将session存储类型改为其它值：</p>
+
+<pre><code>spring:
+    session:
+      store-type: hash_map
+</code></pre>
+
+<h2 id="toc_2">编译成 War 包供 Tomcat 使用</h2>
+
+<p>build.gradle 文件中将原来的jar换成 war， spring-boot-starter-tomcat要做成providedRuntime，否则于tomcat自有的包冲突， 使用 providedRuntime 后的依赖版被放到lib目录同级目录的lib-private目录下。</p>
+
+<pre><code>apply plugin: &#39;war&#39;
+war {
+    baseName = &#39;readinglist&#39;
+    version = &#39;0.0.1-SNAPSHOT&#39;
+}
+
+dependencies {
+    compile(&#39;org.springframework.boot:spring-boot-starter-web&#39;)
+    providedRuntime &#39;org.springframework.boot:spring-boot-starter-tomcat&#39;
+}
+</code></pre>
+
+<p>providedRuntime 并不影响 java -jar xxx.war 的执行，也就是说 xxx.war 文件内部的lib-private目录包含在java 的扫描路径中,所以嵌入式的tomcat可以运行。Tomcat会将war包解压，但它只会找解压后的lib目录， 不会找lib-private目录，所以不会有嵌入式的tomcat冲突。</p>
+
+<p>因此，<code>providedRuntime &#39;org.springframework.boot:spring-boot-starter-tomcat&#39;</code>使得编译后的war包既能放入 Tomcat 容器中托管给Tomcat执行，也能作为独立的程序执行。</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Spring Boot 深入Actuator]]></title>
+    <link href="tianhaox.com/14786335106268.html"/>
+    <updated>2016-11-09T03:31:50+08:00</updated>
+    <id>tianhaox.com/14786335106268.html</id>
+    <content type="html"><![CDATA[
+<h2 id="toc_0"><em>《Spring Boot实战》笔记 第7章</em></h2>
+
+<h2 id="toc_1">保护 Actuator</h2>
+
+<p><strong>改变端点位置</strong></p>
+
+<pre><code>management:
+    context-path: /mgnt
+</code></pre>
+
+<p><strong>为端点添加权限</strong></p>
+
+<pre><code>.antMatchers(&quot;/mgmt/**&quot;).access(&quot;hasRole(&#39;ADMIN&#39;)&quot;)
+.and()
+.inMemoryAuthentication()
+  .withUser(&quot;admin&quot;).password(&quot;s3cr3t&quot;)
+                    .roles(&quot;ADMIN&quot;,&quot;READER&quot;);
+</code></pre>
+
+<h2 id="toc_2">Actuator 提供的能力</h2>
+
+<table>
+<thead>
+<tr>
+<th>HTTP方法</th>
+<th>路径</th>
+<th>描述</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>GET</td>
+<td>/autoconfig</td>
+<td>自动配置报告，那些条件通过了，那些没通过。</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/configprops</td>
+<td>描述配置属性(包括默认值)如何注入Bean</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/beans</td>
+<td>全部Beans以及它们的关系</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/dump</td>
+<td>获取线程活动的快照</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/env</td>
+<td>获取全部环境属性</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/env/{name}</td>
+<td>获取指定名称的环境属性</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/health</td>
+<td>报告健康指标，由HealthIndicator实现类提供</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/info</td>
+<td>应用程序的指定信息</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/mappings</td>
+<td>全部URL路径以及对应控制器</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>metrics</td>
+<td>各种应用程序度量信息，如内存，HTTP请求计数</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>metrics/{name}</td>
+<td>获取指定名称的度量值</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>/shutdown</td>
+<td>关闭程序，要求endpoints.shutdown.enabled=true</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/trace</td>
+<td>基本的HTTP请求跟踪信息</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="toc_3">远程 Actuator</h2>
+
+<p><strong>添加remote-shell依赖</strong></p>
+
+<pre><code>    compile(&#39;org.springframework.boot:spring-boot-starter-remote-shell&#39;)
+</code></pre>
+
+<p>通过启动日志获取远程密码：<br/>
+Using default security password: 6af9a647-1d9d-4ade-a4ef-ae1813aa2301</p>
+
+<p><strong>链接远程Remote-shell</strong></p>
+
+<pre><code>ssh user@localhost -p 2000
+</code></pre>
+
+<p><strong>Remote-shell中可用的命令Actuator命令</strong><br/>
+1. autoconfig<br/>
+2. beans<br/>
+3. metrics 实时变化的metrics，类似top<br/>
+4. endpoint list 查看可选的端点<br/>
+5. endpoint invoke 端点名称</p>
+
+<pre><code class="language-shell">&gt; endpoint list
+requestMappingEndpoint
+environmentEndpoint
+healthEndpoint
+beansEndpoint
+infoEndpoint
+metricsEndpoint
+traceEndpoint
+dumpEndpoint
+autoConfigurationReportEndpoint
+configurationPropertiesReportEndpoint
+&gt; endpoint invoke info # infoEndpoint 的简写     
+{contact={email=support@example.com, phone=18888888888}}
+</code></pre>
+
+<h2 id="toc_4">制定 Actuator</h2>
+
+<p>通常做法：<br/>
+1. 修改端点id，替换默认的端点例如用 kill 替换 shutdown；<br/>
+2. 禁用所有端点，按需打开部分端点，例如只开启metrics：</p>
+
+<pre><code>endpoints:
+  enabled: false
+  metrics:
+      enabled: true
+  shutdown:
+    id: kill
+</code></pre>
+
+<h3 id="toc_5">应用程序生成指标并吐出给metrics</h3>
+
+<p><img src="media/14786335106268/14786643074252.jpg" alt=""/></p>
+
+<p>metrics有2个接口， 一个是计数服务接口（CounterService），一个是瞬时值服务接口（GaugeService），应用程序可以通过调用这2个接口api想metrics提交数据。</p>
+
+<pre><code>package org.springframework.boot.actuate.metrics;
+
+public interface CounterService {
+
+    void increment(String metricName);
+
+    void decrement(String metricName);
+
+    void reset(String metricName);
+
+}
+</code></pre>
+
+<pre><code>package org.springframework.boot.actuate.metrics;
+
+public interface GaugeService {
+
+    void submit(String metricName, double value);
+    
+}
+</code></pre>
+
+<pre><code>@Controller
+@RequestMapping(&quot;/&quot;)
+public class ReadingListController {
+    private AmazonProperties amazonConfig;
+    private ReadingListRepository readingListRepository;
+    private CounterService counterService;
+    private GaugeService gaugeService;
+
+    @Autowired
+    public ReadingListController(ReadingListRepository readingListRepository,
+                                 AmazonProperties amazonConfig,
+                                 CounterService counterService,
+                                 GaugeService gaugeService) {
+        this.readingListRepository = readingListRepository;
+        this.amazonConfig = amazonConfig;
+        this.readerRepository = readerRepository;
+        this.counterService = counterService;
+        this.gaugeService = gaugeService;
+    }
+
+    ...
+
+    @RequestMapping(method=RequestMethod.POST)
+    public String addToReadingList(Reader reader, Book book) {
+        book.setReader(reader);
+        counterService.increment(&quot;books.saved&quot;); // 累加图书保存数到metrics
+        gaugeService.submit(&quot;books.last.saved&quot;,System.currentTimeMillis()); // 记录最后保持时间到metrics
+        readingListRepository.save(book);
+        return &quot;redirect:/&quot;;
+    }
+    
+}
+
+</code></pre>
+
+<h3 id="toc_6">发布自定义指标信息</h3>
+
+<p>实现的接口：</p>
+
+<pre><code>package org.springframework.boot.actuate.endpoint;
+
+public interface PublicMetrics {
+
+    Collection&lt;Metric&lt;?&gt;&gt; metrics();
+}
+</code></pre>
+
+<p>实例：</p>
+
+<pre><code>package com.tianhaox.sbia.readinglist;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.endpoint.PublicMetrics;
+import org.springframework.boot.actuate.metrics.Metric;
+import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+/**
+ * Created by tianhao on 2016/11/9.
+ */
+@Component
+public class ApplicationContextMetrics implements PublicMetrics {
+
+    private ApplicationContext context;
+
+    @Autowired
+    public ApplicationContextMetrics(ApplicationContext context) {
+        this.context = context;
+    }
+
+    @Override
+    public Collection&lt;Metric&lt;?&gt;&gt; metrics() {
+        List&lt;Metric&lt;?&gt;&gt; metrics = new ArrayList&lt;&gt;();
+
+        metrics.add(new Metric&lt;Long&gt;(&quot;spring.context.startup-date&quot;, context.getStartupDate()));
+        metrics.add(new Metric&lt;Integer&gt;(&quot;spring.beans.definitions&quot;, context.getBeanDefinitionCount()));
+        metrics.add(new Metric&lt;Integer&gt;(&quot;spring.bean&quot;, context.getBeanNamesForType(Object.class).length));
+        metrics.add(new Metric&lt;Integer&gt;(&quot;spring.controllers&quot;, context.getBeanNamesForAnnotation(Controller.class).length));
+        return metrics;
+    }
+}
+</code></pre>
+
+<p><a href="http://localhost:8000/mgmt/metrics">http://localhost:8000/mgmt/metrics</a><br/>
+<img src="media/14786335106268/14786693876232.jpg" alt=""/></p>
+
+<h3 id="toc_7">增大trace信息最大值</h3>
+
+<p>默认保存最近100条的访问跟踪信息，如果要增大或缩小，覆盖掉默认的InMemoryTraceRepository Bean设置就好了：</p>
+
+<pre><code>package com.tianhaox.sbia.readinglist;
+
+import org.springframework.boot.actuate.trace.InMemoryTraceRepository;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * Created by tianhao on 2016/11/9.
+ */
+
+@Configuration
+public class ActuatorConfig {
+
+    @Bean
+    public InMemoryTraceRepository traceRepository(){
+        InMemoryTraceRepository traceRepo = new InMemoryTraceRepository();
+        traceRepo.setCapacity(1000);
+        return traceRepo;
+    }
+}
+
+</code></pre>
+
+<h3 id="toc_8">将trace信息存到MongoDB</h3>
+
+<p>虽然可以增加trace记录数最大值以保留更多的信息，但是不是一个优秀可靠的方案，可以将trace信息保存到数据库中，既节约内存也保证了数据不丢失。<br/>
+只需要实现 TraceRepository 接口的Bean， SpringBoot会自动调用该Bean存储数据。<br/>
+注意：内存保存和数据库保存只能使用一个，不能同时使用。</p>
+
+<pre><code>package org.springframework.boot.actuate.trace;
+
+public interface TraceRepository {
+    List&lt;Trace&gt; findAll();
+
+    void add(Map&lt;String, Object&gt; traceInfo);
+}
+</code></pre>
+
+<p>添加mongodb起步依赖：</p>
+
+<pre><code>    compile(&#39;org.springframework.boot:spring-boot-starter-data-mongodb&#39;)
+</code></pre>
+
+<p>实现接口TraceRepository 存储到MongoDB：</p>
+
+<pre><code>package com.tianhaox.sbia.readinglist;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.trace.Trace;
+import org.springframework.boot.actuate.trace.TraceRepository;
+import org.springframework.data.mongodb.core.MongoOperations;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Created by tianhao on 2016/11/9.
+ */
+public class MongoTraceRepository implements TraceRepository {
+
+    private MongoOperations mongoOps;
+
+    @Autowired
+    public MongoTraceRepository(MongoOperations mongoOps) {
+        this.mongoOps = mongoOps;
+    }
+
+
+    @Override
+    public List&lt;Trace&gt; findAll() {
+        return mongoOps.findAll(Trace.class);
+    }
+
+    @Override
+    public void add(Map&lt;String, Object&gt; traceInfo) {
+        mongoOps.save(new Trace(new Date(),traceInfo));
+    }
+}
+</code></pre>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Spring Boot 自定义配置]]></title>
+    <link href="tianhaox.com/14785948397032.html"/>
+    <updated>2016-11-08T16:47:19+08:00</updated>
+    <id>tianhaox.com/14785948397032.html</id>
+    <content type="html"><![CDATA[
+<h2 id="toc_0"><em>《Spring Boot实战》笔记 第3章</em></h2>
+
+<h2 id="toc_1">Spring-Security与覆盖配置</h2>
+
+<p>当在build.gradle中加入security的起步依赖以后，会启用自动security配置</p>
+
+<pre><code>    compile(&quot;org.springframework.boot:spring-boot-starter-security&quot;)
+</code></pre>
+
+<p>而自动security配置会有条件的启动，通过<code>SpringBootWebSecurityConfiguration</code>类可以看出启动条件：</p>
+
+<pre><code class="language-JAVA">@Configuration
+@EnableConfigurationProperties
+@ConditionalOnClass({ EnableWebSecurity.class, AuthenticationEntryPoint.class }) //必须有的类，因为starter-security起步依赖包含这2个类，所以满足条件
+@ConditionalOnMissingBean(WebSecurityConfiguration.class) // 没有这个Bean，如果有自定义的Bean（继承了WebSecurityConfiguration.class类），则不启用这个配置
+@ConditionalOnWebApplication // 必须是Web应用
+@EnableWebSecurity
+public class SpringBootWebSecurityConfiguration {
+    ...
+}
+</code></pre>
+
+<p>自带的security会每次启动后生成一个随机字符串作为密码，用户名为user，这个设定不科学，所以要覆盖掉这个配置，按照上面的方法，自定义WebSecurityConfiguration Bean覆盖掉默认配置：</p>
+
+<pre><code>@Configuration
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+    @Autowired
+    private ReaderRepository readerRepository;
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+                .authorizeRequests()
+                .antMatchers(&quot;/&quot;)
+                .access(&quot;hasRole(&#39;READER&#39;)&quot;)
+                .antMatchers(&quot;/**&quot;).permitAll()
+                .and()
+                .formLogin()
+                .loginPage(&quot;/login&quot;)
+                .failureUrl(&quot;/login?error=true&quot;);
+    }
+
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+
+        auth.userDetailsService(new UserDetailsService() {
+            @Override
+            public UserDetails loadUserByUsername(String username)
+                    throws UsernameNotFoundException {
+                UserDetails userDetails = readerRepository.findOne(username);
+                if (userDetails != null){
+                    return userDetails;
+                }
+                throw new UsernameNotFoundException(&quot;User &#39;&quot;+ username + &quot;&#39; not found.&quot;);
+            }
+        });
+    }
+}
+</code></pre>
+
+<h2 id="toc_2">通过启动参数、配置文件、环境变量设置Spring Boot选项</h2>
+
+<p>Spring Boot自动配置的Bean提供了300多个微调属性，可以通过3种方式对这些属性进行微调。</p>
+
+<p>例如，Spring每次启动都会输出以下ascii art banner信息，它的开关是 <code>spring.main.show-banner</code></p>
+
+<pre><code class="language-text">  .   ____          _            __ _ _
+ /\\ / ___&#39;_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | &#39;_ | &#39;_| | &#39;_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  &#39;  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::        (v1.4.1.RELEASE)
+
+</code></pre>
+
+<p><strong>参数方式</strong></p>
+
+<pre><code>java -jar build/libs/readinglist-0.0.1-SNAPSHOT.jar --spring.main.banner-mode=off
+</code></pre>
+
+<p><strong>application配置文件</strong><br/>
+application.properties</p>
+
+<pre><code class="language-config">spring.main.banner-mode=off
+</code></pre>
+
+<p>application.yml</p>
+
+<pre><code class="language-config">spring:
+    main:
+        banner-mode: off
+</code></pre>
+
+<p><strong>环境变量</strong></p>
+
+<pre><code>export spring_main_banner_mode=off
+</code></pre>
+
+<p>程序会自动将环境名称的&quot;_&quot;替换成&quot;.&quot;或&quot;-&quot;， 或者说程序会把这些参数替换成对应环境变量名后再去匹配是否有该环境变量。</p>
+
+<h2 id="toc_3">Spring Boot的设置途径</h2>
+
+<p>以下列表是按优先级从高到底排列：</p>
+
+<ol>
+<li>命令行参数；</li>
+<li>java:comop/env里的JNDI属性；</li>
+<li>JVM系统属性；</li>
+<li>操作系统环境变量；</li>
+<li>随机生成的带random.*前缀的属性，例如${random.long}；</li>
+<li>应用程序意外事件的 application.preperties 或 application.yml 文件；</li>
+<li>打包再应用程序内部的 application.preperties 或 application.yml 文件；</li>
+<li>通过@PropertySource标注的属性源；</li>
+<li>默认属性；</li>
+</ol>
+
+<p><strong>application.preperties 或 application.yml 文件</strong>读取优先级顺序：<br/>
+1. 外置，运行目录的 /config 子目录；<br/>
+2. 外置，应用程序运行的目录里；<br/>
+3. 内置，在 config 包内；<br/>
+4. 内置，Classpath 根目录。</p>
+
+<p>如果4个位置都有配置文件，那么排在前面的文件中的属性会覆盖排在后面的文件中的属性。</p>
+
+<h2 id="toc_4">几个自定义配置的栗子</h2>
+
+<h3 id="toc_5">关闭thymeleaf缓存</h3>
+
+<pre><code>--spring.thymeleaf.cache=false 
+or
+export spring.thymeleaf.cache=false
+or
+spring:
+    thymeleaf:
+        cache: false
+</code></pre>
+
+<h3 id="toc_6">设置服务器端口</h3>
+
+<pre><code>--server.port=8000
+or
+export server_port=8000
+or
+server:
+    port: 8000
+</code></pre>
+
+<h3 id="toc_7">开启HTTPS</h3>
+
+<pre><code>$ keytool -keystore mykeys.jks -genkey  -alias tomcat -keyalg RSA
+输入密钥库口令:
+再次输入新口令:
+您的名字与姓氏是什么?
+
+您的组织单位名称是什么?
+
+您的组织名称是什么?
+
+您所在的城市或区域名称是什么?
+
+您所在的省/市/自治区名称是什么?
+
+该单位的双字母国家/地区代码是什么?
+
+CN=hao, OU=hao, O=hao, L=hangzhou, ST=zhejiang, C=cn是否正确?
+
+
+输入 &lt;tomcat&gt; 的密钥口令
+    (如果和密钥库口令相同, 按回车):
+再次输入新口令:
+$ ls mykeys.jks
+mykeys.jks
+
+</code></pre>
+
+<p><strong>application.yml文件配置HTTPS</strong></p>
+
+<pre><code>server:
+  port: 8443
+  ssl:
+    key-store-password: 123456
+    key-password: 123456
+    key-store: mykeys.jks
+</code></pre>
+
+<p>访问： <a href="https://localhost:8443/login">https://localhost:8443/login</a><br/>
+注意要加上 https://</p>
+
+<h3 id="toc_8">日志配置</h3>
+
+<p><strong>修改默认日志包</strong><br/>
+Spring Boot默认的配置实现是Logback,假如要换成log4j或者log4j2，要在build.gradle修改依赖关系：</p>
+
+<pre><code>configurations{
+    all*.exclude group: &#39;org.springframework.boot&#39;, module: &#39;spring-boot-starter-logging&#39;
+}
+
+dependencies {
+    ...
+    compile(&quot;org.springframework.boot:spring-boot-starter-log4j:1.3.7.RELEASE&quot;) //必须带上版本号
+    ...
+}
+</code></pre>
+
+<p><strong>覆盖日志输出配置</strong><br/>
+方法1: 在src/main/resources/下创建logback.xml 或 log4j.xml(log4j.properties)</p>
+
+<p>方法2: 在 application.xml设置</p>
+
+<pre><code>logging:
+    level:
+        root: WARN
+        org:
+            springframework:
+                security: DEBUG
+or
+logging:
+    level:
+        root: WARN
+        org.springframework.security: DEBUG                
+</code></pre>
+
+<p>指定目录和文件名</p>
+
+<pre><code>logging:
+    path: /var/logs
+    file: BookWorm.log
+    level:
+        root: WARN
+        org:
+            springframework:
+                security: DEBUG
+</code></pre>
+
+<p>指定日志配置文件</p>
+
+<pre><code>logging:
+    config:
+        classpath: logging-config.xml
+</code></pre>
+
+<h3 id="toc_9">配置数据源</h3>
+
+<pre><code>spring:
+    datasource:
+        url: jdbc:mysql://localhost/readinglist
+        username: dbuser
+        password: dbpass
+        driver-class-name: com.mysql.jdbc.Driver # 可选
+</code></pre>
+
+<p><strong>手动 VS 自动配置的连接池</strong><br/>
+如果配置了DataSource Bean，则用手动配置的连接池，否则使用如下规则自动配置连接池：<br/>
+如果Classpath里有Tomcat的连接池DataSource，那么就用这个连接池，否则Spring Boot会在Classpath里查找以下连接池：<br/>
+1. HikariCP<br/>
+2. Commons DBCP<br/>
+3. Commons DBCP 2</p>
+
+<p><strong>JNDI</strong></p>
+
+<pre><code class="language-YML">spring:
+    datasource:
+        jndi-name: java:/comp/env/jdbc/readingListDS
+</code></pre>
+
+<h3 id="toc_10">应用程序配置外置</h3>
+
+<p>方法1: 使用前缀</p>
+
+<p>application.yml 配置</p>
+
+<pre><code>amazon:
+  associate_id: habuma-20
+</code></pre>
+
+<p>在类中注入属性：</p>
+
+<pre><code>@ConfigurationProperties(&quot;prefix:amazon&quot;) // 属性注入
+public class ReadingListController {
+    private String associateId;
+
+    public void setAssociateId(String associateId) { // setter方法
+        this.associateId = associateId;
+    }
+    
+    @RequestMapping(method=RequestMethod.GET)
+    public String readersBooks(Reader reader, Model model) {
+        List&lt;Book&gt; readingList = readingListRepository.findByReader(reader);
+        if (readingList != null) {
+            model.addAttribute(&quot;books&quot;, readingList);
+            model.addAttribute(&quot;reader&quot;, reader);
+            model.addAttribute(&quot;amazonID&quot;, associateId); // 使用值
+        }
+        return &quot;readingList&quot;;
+    }
+}
+
+</code></pre>
+
+<p>配置属性是associate_id，有下划线的，Spring Boot属性解析器自动将其转成了驼峰式，amazon.associateId 与 amazon.associate_id 和 amazon.associate-id 等价。<br/>
+@ConfigurationProperties 需要 @EnableConfigurationProperties启用，这是Spring Boot自动启用的。</p>
+
+<p>使用前缀的缺点是：只能使用一个前缀，要注入其他前缀就不适合了，除非都放在amazon前缀下，不是最理想的方案。</p>
+
+<p>方法2: 在类中收集属性，然后将属性收集类注入到其他类供使用，收集类和被注入类可以有多对多关系。</p>
+
+<p><strong>属性收集类</strong></p>
+
+<pre><code>package com.tianhaox.sbia.readinglist;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
+
+@Component
+@ConfigurationProperties(&quot;amazon&quot;)
+public class AmazonProperties {
+
+  private String associateId;
+  
+  public void setAssociateId(String associateId) {
+    this.associateId = associateId;
+  }
+  
+  public String getAssociateId() {
+    return associateId;
+  }
+}
+</code></pre>
+
+<pre><code>package com.tianhaox.sbia.readinglist;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
+import java.util.List;
+
+@Controller
+@RequestMapping(&quot;/&quot;)
+@ConfigurationProperties(&quot;amazon&quot;)
+public class ReadingListController {
+
+    private AmazonProperties amazonConfig;
+    private ReadingListRepository readingListRepository;
+
+    // 注入 AmazonProperties
+    @Autowired
+    public ReadingListController(ReadingListRepository readingListRepository,
+                                 AmazonProperties amazonConfig) {
+        this.readingListRepository = readingListRepository;
+        this.amazonConfig = amazonConfig;
+    }
+
+    @RequestMapping(method=RequestMethod.GET, value=&quot;/fail&quot;)
+    public void fail() {
+        throw new RuntimeException();
+    }
+
+    @ExceptionHandler(value=RuntimeException.class)
+    @ResponseStatus(value= HttpStatus.BANDWIDTH_LIMIT_EXCEEDED)
+    public String error() {
+        return &quot;error&quot;;
+    }
+
+    @RequestMapping(method=RequestMethod.GET)
+    public String readersBooks(Reader reader, Model model) {
+        List&lt;Book&gt; readingList = readingListRepository.findByReader(reader);
+        if (readingList != null) {
+            model.addAttribute(&quot;books&quot;, readingList);
+            model.addAttribute(&quot;reader&quot;, reader);
+            model.addAttribute(&quot;amazonID&quot;, amazonConfig.getAssociateId()); // 使用配置
+        }
+        return &quot;readingList&quot;;
+    }
+
+    @RequestMapping(method=RequestMethod.POST)
+    public String addToReadingList(Reader reader, Book book) {
+        book.setReader(reader);
+        readingListRepository.save(book);
+        return &quot;redirect:/&quot;;
+    }
+    
+}
+</code></pre>
+
+<h3 id="toc_11">使用 profile</h3>
+
+<p><strong>只在生产环境下启用Security</strong></p>
+
+<pre><code>@Profile(&quot;production&quot;)
+@Configuration
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+   ...
+}
+</code></pre>
+
+<p>启用指定profile</p>
+
+<pre><code># 命令行启用，优先级最高，会覆盖配置文件盒环境变量的配置
+java -jar build/libs/readinglist-0.0.1-SNAPSHOT.jar --spring.profiles.active=production
+
+or
+java -jar build/libs/readinglist-0.0.1-SNAPSHOT.jar --spring.profiles.active=development
+</code></pre>
+
+<pre><code># 配置文件指定
+spring:
+    profiles:
+        active: production
+or
+spring:
+    profiles:
+        active: development
+</code></pre>
+
+<p><strong>不同环境使用不同日志级别</strong></p>
+
+<pre><code>logging:  # 默认配置，为指定profiles时用默认配置
+    level:
+        root: INFO
+        
+---
+spring:
+    profiles: development
+logging:
+    level:
+        root: DEBUG
+
+---
+spring:
+    profiles: production
+logging:
+    path: /tmp
+    file: BookWorm.log
+    level:
+        root: WARN
+</code></pre>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Spring Boot 开发第一个应用程序]]></title>
+    <link href="tianhaox.com/14785852868633.html"/>
+    <updated>2016-11-08T14:08:06+08:00</updated>
+    <id>tianhaox.com/14785852868633.html</id>
+    <content type="html"><![CDATA[
+<h2 id="toc_0"><em>《Spring Boot实战》笔记 第2章</em></h2>
+
+<h2 id="toc_1">1. 生成初始化项目</h2>
+
+<pre><code class="language-SHELL">spring init --package-name com.tianhaox.sbia.readinglist \
+  -dweb,data-jpa,h2,thymeleaf \
+  -p jar -j 1.8 -x --build gradle  readinglist
+</code></pre>
+
+<p>项目结构：<br/>
+<img src="media/14785852868633/14785867777588.jpg" alt=""/></p>
+
+<pre><code>gradle bootRun # 使用gradle启动应用
+gradle build # 编译
+java -jar build/libs/readinglist-0.0.1-SNAPSHOT.jar # 启动编译结果应用
+</code></pre>
+
+<h2 id="toc_2">2. 关于启动引导Spring</h2>
+
+<pre><code>package com.tianhaox.sbia.readinglist;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication //开启组件扫描和自动配置
+public class ReadingListApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(ReadingListApplication.class, args); // 负责启动引导应用程序
+    }
+}
+</code></pre>
+
+<p>@SpringBootApplication注解是以下3个注解的结合体：<br/>
+1. @Configuration：使Spring基于java配置而不是XML配置；<br/>
+2. @ComponentScan：启用组件扫描；<br/>
+3. @EnableAutoConfiguration：启用自动配置。</p>
+
+<h2 id="toc_3">3. 关于Spring Boot测试</h2>
+
+<pre><code class="language-JAVA">package com.tianhaox.sbia.readinglist;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+
+@RunWith(SpringRunner.class)
+@SpringBootTest
+public class ReadingListApplicationTests {
+
+    @Test
+    public void contextLoads() {
+    }
+
+}
+
+</code></pre>
+
+<h2 id="toc_4">关于build.gradle</h2>
+
+<pre><code>buildscript {
+    ext {
+        springBootVersion = &#39;1.4.1.RELEASE&#39;
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath(&quot;org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}&quot;)
+    }
+}
+
+apply plugin: &#39;java&#39;
+apply plugin: &#39;eclipse&#39;
+apply plugin: &#39;spring-boot&#39; // 启用 spring-boot 插件
+
+jar {
+    baseName = &#39;readinglist&#39;
+    version = &#39;0.0.1-SNAPSHOT&#39;
+}
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+
+dependencies {
+    compile(&#39;org.springframework.boot:spring-boot-starter-data-jpa&#39;) //起步依赖
+    compile(&#39;org.springframework.boot:spring-boot-starter-thymeleaf&#39;) //起步依赖
+    compile(&#39;org.springframework.boot:spring-boot-starter-web&#39;) //起步依赖
+    runtime(&#39;com.h2database:h2&#39;)
+    testCompile(&#39;org.springframework.boot:spring-boot-starter-test&#39;) //起步依赖
+}
+
+</code></pre>
+
+<p><strong>查看所以依赖关系</strong></p>
+
+<pre><code class="language-SHELL">gradle dependencies
+mvn dependency:tree
+</code></pre>
+
+<h2 id="toc_5">自动配置条件化注解</h2>
+
+<table>
+<thead>
+<tr>
+<th>条件化注解</th>
+<th>配置生效条件</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>@ConditionOnBean</td>
+<td>配置了某个特定Bean</td>
+</tr>
+<tr>
+<td>@ConditionOnMissingBean</td>
+<td>没有配置特定的Bean</td>
+</tr>
+<tr>
+<td>@ConditionOnClass</td>
+<td>Classpath里有指定的类</td>
+</tr>
+<tr>
+<td>@ConditionOnMissClass</td>
+<td>Classpath里缺少制定的类</td>
+</tr>
+<tr>
+<td>@ConditionOnExpression</td>
+<td>指定SpEL表达式结果为true</td>
+</tr>
+<tr>
+<td>@ConditionOnJava</td>
+<td>Java版本为在指定的或在指定范围内</td>
+</tr>
+<tr>
+<td>@ConditionOnJndi</td>
+<td>参数重给定的JNDI位置必须存在一个，如果没有参数必须有JNDI InitialContext</td>
+</tr>
+<tr>
+<td>@ConditionOnProperty</td>
+<td>指定的配置属性要有一个明确值</td>
+</tr>
+<tr>
+<td>@ConditionOnResource</td>
+<td>Classpath里有指定的资源</td>
+</tr>
+<tr>
+<td>@ConditionOnWebApplication</td>
+<td>这是一个Web应用程序</td>
+</tr>
+<tr>
+<td>@ConditionOnNotWebApplication</td>
+<td>这不是一个Web应用程序</td>
+</tr>
+</tbody>
+</table>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Spring Boot 入门：安装和构建]]></title>
+    <link href="tianhaox.com/14785139214429.html"/>
+    <updated>2016-11-07T18:18:41+08:00</updated>
+    <id>tianhaox.com/14785139214429.html</id>
+    <content type="html"><![CDATA[
+<h2 id="toc_0"><em>《Spring Boot实战》笔记 第1章</em></h2>
+
+<h2 id="toc_1">安装（Homebrew）</h2>
+
+<p>brew tap pivotal/tap<br/>
+brew install springboot<br/>
+spring --version</p>
+
+<h2 id="toc_2">构建初始化项目</h2>
+
+<p>下面3种构建方式都向 start.spring.io 地址发送构建请求然后下载初始化项目文件，所以都要求网络可用。</p>
+
+<h3 id="toc_3">1. 通过 start.spring.io Web界面构建初始项目</h3>
+
+<p><img src="media/14785139214429/14785147544292.jpg" alt=""/></p>
+
+<p>点击“Switch to the full version”会展示更多定制选项，包括项目信息和起步依赖选项：<br/>
+<img src="media/14785139214429/14785148349125.jpg" alt=""/><br/>
+<img src="media/14785139214429/14785149271601.jpg" alt=""/></p>
+
+<p>点击“Generate Project”后会下载一个初始项目包。</p>
+
+<h3 id="toc_4">2. 通过 IntelliJ Idea 构建初始项目</h3>
+
+<p><img src="media/14785139214429/14785151710820.jpg" alt=""/></p>
+
+<p><img src="media/14785139214429/14785152865447.jpg" alt=""/></p>
+
+<p><img src="media/14785139214429/14785152076947.jpg" alt=""/></p>
+
+<h3 id="toc_5">3. 通过Spring Boot CLI 创建初始化项目</h3>
+
+<pre><code>$ spring init --build gradle -aspringbootinit -gcom.tianhaox -j1.8 -nspringbootinit -v 1.0 -pjar --package-name  com.tianhaox.springboot -x -dweb,jpa,security --force springbootinit
+Using service at https://start.spring.io
+Project extracted to &#39;/path/to/springbootinit&#39;
+</code></pre>
+
+<p><strong>查看参数说明</strong></p>
+
+<pre><code>$ spring help init
+spring init - Initialize a new project using Spring Initializr (start.spring.io)
+
+usage: spring init [options] [location]
+
+Option              Description
+------              -----------
+-a, --artifactId    Project coordinates; infer archive
+                      name (for example &#39;test&#39;)
+-b, --boot-version  Spring Boot version (for example
+                      &#39;1.2.0.RELEASE&#39;)
+--build             Build system to use (for example
+                      &#39;maven&#39; or &#39;gradle&#39;) (default: maven)
+-d, --dependencies  Comma-separated list of dependency
+                      identifiers to include in the
+                      generated project
+--description       Project description
+-f, --force         Force overwrite of existing files
+--format            Format of the generated content (for
+                      example &#39;build&#39; for a build file,
+                      &#39;project&#39; for a project archive)
+                      (default: project)
+-g, --groupId       Project coordinates (for example &#39;org.
+                      test&#39;)
+-j, --java-version  Language level (for example &#39;1.8&#39;)
+-l, --language      Programming language  (for example
+                      &#39;java&#39;)
+-n, --name          Project name; infer application name
+-p, --packaging     Project packaging (for example &#39;jar&#39;)
+--package-name      Package name
+-t, --type          Project type. Not normally needed if
+                      you use --build and/or --format.
+                      Check the capabilities of the
+                      service (--list) for more details
+--target            URL of the service to use (default:
+                      https://start.spring.io)
+-v, --version       Project version (for example &#39;0.0.1-
+                      SNAPSHOT&#39;)
+-x, --extract       Extract the project archive. Inferred
+                      if a location is specified without
+                      an extension
+
+examples:
+
+    To list all the capabilities of the service:
+        $ spring init --list
+
+    To creates a default project:
+        $ spring init
+
+    To create a web my-app.zip:
+        $ spring init -d=web my-app.zip
+
+    To create a web/data-jpa gradle project unpacked:
+        $ spring init -d=web,jpa --build=gradle my-dir
+
+</code></pre>
+
+<p><strong>查看支持的依赖等相关选项</strong></p>
+
+<pre><code>$ spring init --list
+
+  .   ____          _            __ _ _
+ /\\ / ___&#39;_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | &#39;_ | &#39;_| | &#39;_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  &#39;  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+:: Service capabilities ::  https://start.spring.io
+
+Supported dependencies
++-----------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------+
+| Id                                | Description                                                                                                                                                            | Required version            |
++-----------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------+
+| activemq                          | Java Message Service API via Apache ActiveMQ                                                                                                                           | &gt;= 1.4.0.RC1                |
+| activiti-basic                    | Activiti BPMN workflow engine                                                                                                                                          |                             |
+| actuator                          | Production ready features to help you monitor and manage your application                                                                                              |                             |
+| actuator-docs                     | API documentation for the Actuator endpoints                                                                                                                           | &gt;= 1.3.0.M4                 |
+| amqp                              | Advanced Message Queuing Protocol via spring-rabbit                                                                                                                    |                             |
+| aop                               | Aspect-oriented programming including spring-aop and AspectJ                                                                                                           |                             |
+| artemis                           | Java Message Service API via Apache Artemis                                                                                                                            | &gt;= 1.3.0.M2                 |
+| batch                             | Spring Batch including HSQLDB database                                                                                                                                 |                             |
+| cache                             | Spring&#39;s Cache abstraction                                                                                                                                             | &gt;= 1.3.0.M1                 |
+| camel                             | Integration using Apache Camel                                                                                                                                         |                             |
+| cloud-aws                         | AWS native services from spring-cloud-aws                                                                                                                              | &gt;= 1.2.3.RELEASE            |
+| cloud-aws-jdbc                    | Relational databases on AWS with RDS and spring-cloud-aws-jdbc                                                                                                         | &gt;= 1.2.3.RELEASE            |
+| cloud-aws-messaging               | Messaging on AWS with SQS and spring-cloud-aws-messaging                                                                                                               | &gt;= 1.2.3.RELEASE            |
+| cloud-bus-amqp                    | A simple control bus with AMQP and spring-cloud-bus-amqp                                                                                                               | &gt;= 1.2.3.RELEASE            |
+| cloud-bus-kafka                   | A simple control bus with Kafka and spring-cloud-bus                                                                                                                   | (1.3.0.M5,9999.9.9.RELEASE] |
+| cloud-cloudfoundry-discovery      | Service discovery with Cloud Foundry                                                                                                                                   | &gt;= 1.3.0.M4                 |
+| cloud-cluster-etcd                | Leadership election and global state with Etcd and spring-cloud-cluster-etcd                                                                                           | &gt;= 1.3.0.M4                 |
+| cloud-cluster-hazelcast           | Leadership election and global state with Hazelcast and spring-cloud-cluster-hazelcast                                                                                 | &gt;= 1.3.0.M4                 |
+| cloud-cluster-redis               | Leadership election and global state with Redis and spring-cloud-cluster-redis                                                                                         | &gt;= 1.3.0.M4                 |
+| cloud-cluster-zookeeper           | Leadership election and global state with Zookeeper and spring-cloud-cluster-zookeeper                                                                                 | &gt;= 1.3.0.M4                 |
+| cloud-config-client               | spring-cloud-config Client                                                                                                                                             | &gt;= 1.2.3.RELEASE            |
+| cloud-config-server               | Central management for configuration via a git or svn backend                                                                                                          | &gt;= 1.2.3.RELEASE            |
+| cloud-connectors                  | Simplifies connecting to services in cloud platforms, including spring-cloud-connector and spring-cloud-cloudfoundry-connector                                         | &gt;= 1.2.0.RELEASE            |
+| cloud-contract-stub-runner        | Stub Runner for HTTP/Messaging based communication                                                                                                                     | &gt;= 1.4.0.RC1                |
+| cloud-contract-verifier           | Test dependencies required for autogenerated tests                                                                                                                     | &gt;= 1.4.0.RC1                |
+| cloud-contract-wiremock           | Test dependencies required for the WireMock HTTP server                                                                                                                | &gt;= 1.4.0.RC1                |
+| cloud-dataflow-server-local       | Local Data Flow Server implementation                                                                                                                                  | &gt;= 1.3.2.RELEASE            |
+| cloud-dataflow-shell              | Data Flow Shell                                                                                                                                                        | &gt;= 1.3.2.RELEASE            |
+| cloud-eureka                      | Service discovery using spring-cloud-netflix and Eureka                                                                                                                | &gt;= 1.2.3.RELEASE            |
+| cloud-eureka-server               | spring-cloud-netflix Eureka Server                                                                                                                                     | &gt;= 1.2.3.RELEASE            |
+| cloud-feign                       | Declarative REST clients with spring-cloud-netflix Feign                                                                                                               | &gt;= 1.2.3.RELEASE            |
+| cloud-hystrix                     | Circuit breaker with spring-cloud-netflix Hystrix                                                                                                                      | &gt;= 1.2.3.RELEASE            |
+| cloud-hystrix-dashboard           | Circuit breaker dashboard with spring-cloud-netflix Hystrix                                                                                                            | &gt;= 1.2.3.RELEASE            |
+| cloud-oauth2                      | OAuth2 and distributed application patterns with spring-cloud-security                                                                                                 | &gt;= 1.2.3.RELEASE            |
+| cloud-ribbon                      | Client side load balancing with spring-cloud-netflix and Ribbon                                                                                                        | &gt;= 1.2.3.RELEASE            |
+| cloud-security                    | Secure load balancing and routing with spring-cloud-security                                                                                                           | &gt;= 1.2.3.RELEASE            |
+| cloud-sleuth-stream               | Marshals Spring Cloud Sleuth Spans over a Spring Cloud Stream binder                                                                                                   | &gt;= 1.3.0.M4                 |
+| cloud-sleuth-zipkin-stream        | Consumes span data in messages from Spring Cloud Sleuth Stream and writes them to a Zipkin store                                                                       | &gt;= 1.3.0.M4                 |
+| cloud-starter                     | spring-cloud-context (e.g. Bootstrap context and @RefreshScope)                                                                                                        | &gt;= 1.2.3.RELEASE            |
+| cloud-starter-consul-config       | Configuration management with Hashicorp Consul                                                                                                                         | &gt;= 1.3.0.M4                 |
+| cloud-starter-consul-discovery    | Service discovery with Hashicorp Consul                                                                                                                                | &gt;= 1.3.0.M4                 |
+| cloud-starter-sleuth              | Distributed tracing via logs with spring-cloud-sleuth                                                                                                                  | &gt;= 1.3.0.M4                 |
+| cloud-starter-zipkin              | Distributed tracing with an existing Zipkin installation and spring-cloud-sleuth-zipkin. Alternatively, consider Sleuth Stream.                                        | &gt;= 1.3.0.M4                 |
+| cloud-starter-zookeeper-config    | Configuration management with Zookeeper and spring-cloud-zookeeper-config                                                                                              | &gt;= 1.3.0.M4                 |
+| cloud-starter-zookeeper-discovery | Service discovery with Zookeeper and spring-cloud-zookeeper-discovery                                                                                                  | &gt;= 1.3.0.M4                 |
+| cloud-stream-binder-kafka         | Messaging microservices with Kafka                                                                                                                                     | &gt;= 1.3.0.M4                 |
+| cloud-stream-binder-rabbit        | Messaging microservices with RabbitMQ                                                                                                                                  | &gt;= 1.3.0.M4                 |
+| cloud-task                        | Task result tracking along with integration with batch and streams                                                                                                     | &gt;= 1.2.3.RELEASE            |
+| cloud-turbine                     | Circuit breaker metric aggregation using spring-cloud-netflix with Turbine and server-sent events                                                                      | &gt;= 1.2.3.RELEASE            |
+| cloud-turbine-amqp                | Circuit breaker metric aggregation using spring-cloud-netflix with Turbine and AMQP                                                                                    | [1.2.0.RELEASE,1.3.0.M5]    |
+| cloud-turbine-stream              | Circuit breaker metric aggregation using spring-cloud-netflix with Turbine and Spring Cloud Stream (choose a specific Stream binder implementation to complement this) | &gt;= 1.3.0.M5                 |
+| cloud-zuul                        | Intelligent and programmable routing with spring-cloud-netflix Zuul                                                                                                    | &gt;= 1.2.3.RELEASE            |
+| configuration-processor           | Generate metadata for your custom configuration keys                                                                                                                   | &gt;= 1.2.0.RELEASE            |
+| data-cassandra                    | Cassandra NoSQL Database, including spring-data-cassandra                                                                                                              | &gt;= 1.3.0.RC1                |
+| data-couchbase                    | Couchbase NoSQL database, including spring-data-couchbase                                                                                                              | &gt;= 1.4.0.M1                 |
+| data-elasticsearch                | Elasticsearch search and analytics engine including spring-data-elasticsearch                                                                                          |                             |
+| data-gemfire                      | GemFire distributed data store including spring-data-gemfire                                                                                                           |                             |
+| data-jpa                          | Java Persistence API including spring-data-jpa, spring-orm and Hibernate                                                                                               |                             |
+| data-jpa                          | Java Persistence API including spring-data-jpa, spring-orm and Hibernate                                                                                               |                             |
+| data-mongodb                      | MongoDB NoSQL Database, including spring-data-mongodb                                                                                                                  |                             |
+| data-neo4j                        | Neo4j NoSQL graph database, including spring-data-neo4j                                                                                                                | &gt;= 1.4.0.M2                 |
+| data-redis                        | REDIS key-value data store, including spring-redis                                                                                                                     |                             |
+| data-redis                        | REDIS key-value data store, including spring-redis                                                                                                                     |                             |
+| data-rest                         | Exposing Spring Data repositories over REST via spring-data-rest-webmvc                                                                                                |                             |
+| data-rest-hal                     | Browsing Spring Data REST repositories in your browser                                                                                                                 | &gt;= 1.3.0.M1                 |
+| data-solr                         | Apache Solr search platform, including spring-data-solr                                                                                                                |                             |
+| derby                             | Apache Derby database (with embedded support)                                                                                                                          | &gt;= 1.2.2.RELEASE            |
+| devtools                          | Spring Boot Development Tools                                                                                                                                          | &gt;= 1.3.0.M1                 |
+| experimental-web-reactive         | Reactive web development with Apache Tomcat and Spring Reactive (experimental)                                                                                         | &gt;= 2.0.0.BUILD-SNAPSHOT     |
+| freemarker                        | FreeMarker templating engine                                                                                                                                           |                             |
+| groovy-templates                  | Groovy templating engine                                                                                                                                               |                             |
+| h2                                | H2 database (with embedded support)                                                                                                                                    |                             |
+| hateoas                           | HATEOAS-based RESTful services                                                                                                                                         | &gt;= 1.2.2.RELEASE            |
+| hornetq                           | Java Message Service API via HornetQ                                                                                                                                   | [1.1.0.RELEASE,1.4.0.RC1)   |
+| hsql                              | HSQLDB database (with embedded support)                                                                                                                                |                             |
+| integration                       | Common spring-integration modules                                                                                                                                      |                             |
+| jdbc                              | JDBC databases                                                                                                                                                         |                             |
+| jersey                            | RESTful Web Services framework                                                                                                                                         | &gt;= 1.2.0.RELEASE            |
+| jooq                              | Persistence support using Java Object Oriented Querying                                                                                                                | &gt;= 1.3.0.M2                 |
+| jta-atomikos                      | JTA distributed transactions via Atomikos                                                                                                                              | &gt;= 1.2.0.M1                 |
+| jta-bitronix                      | JTA distributed transactions via Bitronix                                                                                                                              | &gt;= 1.2.0.M1                 |
+| jta-narayana                      | JTA distributed transactions via Narayana                                                                                                                              | &gt;= 1.4.0.M2                 |
+| lombok                            | Java annotation library which helps to reduce boilerplate code and code faster                                                                                         |                             |
+| mail                              | javax.mail                                                                                                                                                             | &gt;= 1.2.0.RC1                |
+| mobile                            | Simplify the development of mobile web applications with spring-mobile                                                                                                 |                             |
+| mustache                          | Mustache templating engine                                                                                                                                             | &gt;= 1.2.2.RELEASE            |
+| mybatis                           | Persistence support using MyBatis                                                                                                                                      | &gt;= 1.3.0.RELEASE            |
+| mysql                             | MySQL jdbc driver                                                                                                                                                      |                             |
+| postgresql                        | PostgreSQL jdbc driver                                                                                                                                                 |                             |
+| ratpack                           | Spring Boot integration for the Ratpack framework                                                                                                                      | &gt;= 1.2.0.RELEASE            |
+| remote-shell                      | CRaSH shell integration                                                                                                                                                |                             |
+| restdocs                          | Document RESTful services by combining hand-written and auto-generated documentation                                                                                   |                             |
+| retry                             | Provide declarative retry support via spring-retry                                                                                                                     | &gt;= 1.3.0.M2                 |
+| scs-circuit-breaker               | Hystrix circuit breaker on Pivotal Cloud Foundry                                                                                                                       | [1.3.0.RELEASE,1.4.0.M1)    |
+| scs-config-client                 | Config client on Pivotal Cloud Foundry                                                                                                                                 | [1.3.0.RELEASE,1.4.0.M1)    |
+| scs-service-registry              | Eureka service discovery on Pivotal Cloud Foundry                                                                                                                      | [1.3.0.RELEASE,1.4.0.M1)    |
+| security                          | Secure your application via spring-security                                                                                                                            |                             |
+| session                           | API and implementations for managing a user’s session information                                                                                                      | &gt;= 1.3.0.M2                 |
+| social-facebook                   | spring-social-facebook                                                                                                                                                 |                             |
+| social-linkedin                   | spring-social-linkedin                                                                                                                                                 |                             |
+| social-twitter                    | spring-social-twitter                                                                                                                                                  |                             |
+| thymeleaf                         | Thymeleaf templating engine, including integration with Spring                                                                                                         |                             |
+| vaadin                            | Vaadin java web application framework                                                                                                                                  |                             |
+| validation                        | JSR-303 validation infrastructure (already included with web)                                                                                                          | &gt;= 1.3.0.M1                 |
+| velocity                          | Velocity templating engine                                                                                                                                             | [1.1.6.RELEASE,1.4.0.M2)    |
+| web                               | Full-stack web development with Tomcat and Spring MVC                                                                                                                  |                             |
+| web-services                      | Contract-first SOAP service development with Spring Web Services                                                                                                       |                             |
+| web-services                      | Contract-first SOAP service development with Spring Web Services                                                                                                       |                             |
+| websocket                         | Websocket development with SockJS and STOMP                                                                                                                            |                             |
+| zipkin-server                     | Consumes span data over HTTP and writes them to a span store                                                                                                           | &gt;= 1.3.0.M4                 |
+| zipkin-ui                         | add the Zipkin UI module to the Zipkin server to get a Zipkin service that accepts Spans and provides visualization                                                    | &gt;= 1.3.3.RELEASE            |
++-----------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------+
+
+
+Project types (* denotes the default)
++-----------------+-----------------------------------------+-----------------------------+
+| Id              | Description                             | Tags                        |
++-----------------+-----------------------------------------+-----------------------------+
+| gradle-build    | Generate a Gradle build file            | build:gradle,format:build   |
+| gradle-project  | Generate a Gradle based project archive | build:gradle,format:project |
+| maven-build     | Generate a Maven pom.xml                | build:maven,format:build    |
+| maven-project * | Generate a Maven based project archive  | build:maven,format:project  |
++-----------------+-----------------------------------------+-----------------------------+
+
+
+Parameters
++-------------+------------------------------------------+------------------------------+
+| Id          | Description                              | Default value                |
++-------------+------------------------------------------+------------------------------+
+| type        | project type                             | maven-project                |
+| bootVersion | spring boot version                      | 1.4.1.RELEASE                |
+| packaging   | project packaging                        | jar                          |
+| javaVersion | language level                           | 1.8                          |
+| language    | programming language                     | java                         |
+| groupId     | project coordinates                      | com.example                  |
+| artifactId  | project coordinates (infer archive name) | demo                         |
+| version     | project version                          | 0.0.1-SNAPSHOT               |
+| name        | project name (infer application name)    | demo                         |
+| description | project description                      | Demo project for Spring Boot |
+| packageName | root package                             | com.example                  |
++-------------+------------------------------------------+------------------------------+
+</code></pre>
+
+<h3 id="toc_6">4.通过Spring Suite Tool（Eclipse插件）构建（略）</h3>
+
+<h2 id="toc_7">构建后的项目目录结构</h2>
+
+<p><img src="media/14785139214429/14785203536210.jpg" alt=""/></p>
+
+<h3 id="toc_8">build.gradle</h3>
+
+<pre><code>buildscript {
+    ext {
+        springBootVersion = &#39;1.4.1.RELEASE&#39;
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath(&quot;org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}&quot;)
+    }
+}
+
+apply plugin: &#39;java&#39;
+apply plugin: &#39;eclipse&#39;
+apply plugin: &#39;spring-boot&#39;
+
+jar {
+    baseName = &#39;springbootinit&#39;
+    version = &#39;1.0&#39;
+}
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+
+dependencies {
+    compile(&#39;org.springframework.boot:spring-boot-starter-data-jpa&#39;)
+    compile(&#39;org.springframework.boot:spring-boot-starter-security&#39;)
+    compile(&#39;org.springframework.boot:spring-boot-starter-web&#39;)
+    testCompile(&#39;org.springframework.boot:spring-boot-starter-test&#39;)
+}
+
+</code></pre>
+
+<h3 id="toc_9">SpringbootinitApplication.java</h3>
+
+<pre><code>package com.tianhaox.springboot;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class SpringbootinitApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(SpringbootinitApplication.class, args);
+    }
+}
+
+</code></pre>
+
+<h3 id="toc_10">SpringbootinitApplicationTests.java</h3>
+
+<pre><code>package com.tianhaox.springboot;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+
+@RunWith(SpringRunner.class)
+@SpringBootTest
+public class SpringbootinitApplicationTests {
+
+    @Test
+    public void contextLoads() {
+    }
+
+}
+
+</code></pre>
+
+<h3 id="toc_11">src/main/resources/application.properties 空文件</h3>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Hello OpenShift]]></title>
+    <link href="tianhaox.com/14798013920202.html"/>
+    <updated>2016-11-22T15:56:32+08:00</updated>
+    <id>tianhaox.com/14798013920202.html</id>
+    <content type="html"><![CDATA[
+<p>感谢 RedHat 提供的免费 OpenShift，今天把博客搬到了 OpenShift Online 了。</p>
+
+<p>OpenShift 免费版可以有3个应用，每个应用1G存储，可以指定站点域名，如果国内不做域名加速的话还是有点慢，不过加速后就很快了。</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[第一篇blog]]></title>
+    <link href="tianhaox.com/14792640913702.html"/>
+    <updated>2016-11-16T10:41:31+08:00</updated>
+    <id>tianhaox.com/14792640913702.html</id>
+    <content type="html"><![CDATA[
+<p>用MWeb写博客，一键发布！</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Spring消息(2) AMQP]]></title>
+    <link href="tianhaox.com/14755195602368.html"/>
+    <updated>2016-10-04T02:32:40+08:00</updated>
+    <id>tianhaox.com/14755195602368.html</id>
+    <content type="html"><![CDATA[
+<p><em>——《Spring实战》笔记 第17章</em></p>
+
+<h2 id="toc_0">安装 RabbitMQ</h2>
+
+<pre><code>brew install rabbitmq
+rabbitmq-server
+brew services start rabbitmq
+</code></pre>
+
+<p>WEB管理页面 <a href="http://localhost:15672">http://localhost:15672</a>  用户名/密码: guest/guest</p>
+
+<h2 id="toc_1">基本配置</h2>
+
+<pre><code class="language-XML">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans:beans xmlns=&quot;http://www.springframework.org/schema/rabbit&quot;
+             xmlns:beans=&quot;http://www.springframework.org/schema/beans&quot;
+             xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+             xsi:schemaLocation=&quot;http://www.springframework.org/schema/rabbit
+             http://www.springframework.org/schema/rabbit/spring-rabbit.xsd
+             http://www.springframework.org/schema/beans
+             http://www.springframework.org/schema/beans/spring-beans.xsd&quot;&gt;
+
+    &lt;!--========= 连接工厂配置.开始 =========--&gt;
+    &lt;!-- 最简配置,全部使用默认值 --&gt;
+    &lt;connection-factory id=&quot;connectionFactory&quot; /&gt;
+    &lt;!-- or --&gt;
+    &lt;!-- 完全配置 --&gt;
+    &lt;connection-factory id=&quot;connectionFactory&quot;
+                        host=&quot;${rabbitmq.host}&quot;
+                        port=&quot;${rabbitmq.port}&quot;
+                        username=&quot;${rabbitmq.username}&quot;
+                        password=&quot;${rabbitmq.password}&quot; /&gt;
+    &lt;!--========= 连接工厂配置.结束 =========--&gt;
+
+
+    &lt;!-- admin --&gt;
+    &lt;admin connection-factory=&quot;connectionFactory&quot;/&gt;
+
+    &lt;!--========= 消息配置.开始 =========--&gt;
+    &lt;!-- 单队列配置--&gt;
+    &lt;queue id=&quot;spittleAlertQueue&quot; name=&quot;spittle.alerts&quot; /&gt;
+    &lt;fanout-exchange name=&quot;spittle.alert.exchange&quot;&gt;
+        &lt;bindings&gt;
+            &lt;binding queue=&quot;spittle.alerts&quot; /&gt;
+        &lt;/bindings&gt;
+    &lt;/fanout-exchange&gt;
+
+    &lt;!-- or --&gt;
+    
+    &lt;!-- 复合配置 --&gt;
+    &lt;queue name=&quot;spittle.alert.queue.1&quot; /&gt;
+    &lt;queue name=&quot;spittle.alert.queue.2&quot; /&gt;
+    &lt;queue name=&quot;spittle.alert.queue.3&quot; /&gt;
+    &lt;fanout-exchange name=&quot;spittle.fanout&quot;&gt;
+        &lt;bindings&gt;
+            &lt;binding queue=&quot;spittle.alert.queue.1&quot; /&gt;
+            &lt;binding queue=&quot;spittle.alert.queue.2&quot; /&gt;
+            &lt;binding queue=&quot;spittle.alert.queue.3&quot; /&gt;
+        &lt;/bindings&gt;
+    &lt;/fanout-exchange&gt;
+    &lt;!--========= 消息配置.结束 =========--&gt;
+
+&lt;/beans:beans&gt;
+</code></pre>
+
+<h2 id="toc_2">生产者 和 消费者</h2>
+
+<p>注意 RabbitTemplate 的 convertAndSend() 、send()、receive()、receiveAndConvert()都不会堵塞。所以跟 JMS 不一样。。。</p>
+
+<h3 id="toc_3">生产者 API, convertAndSend() 和 send()</h3>
+
+<p>convertAndSend() 的几个重载方法：</p>
+
+<pre><code class="language-JAVA">    // 发送给默认 exchange 的默认 routing-key
+    public void convertAndSend(Object object) throws AmqpException;
+
+    // 发送给默认 exchange 的指定 routing-key
+    public void convertAndSend(String routingKey, final Object object) throws AmqpException;
+
+    // 发送给指定 exchange 的指定 routing-key
+    public void convertAndSend(String exchange, String routingKey, final Object object) throws AmqpException;
+
+    // 发送给默认 exchange 的默认 routing-key，发送前用messagePostProcessor处理消息
+    public void convertAndSend(Object message, MessagePostProcessor messagePostProcessor) throws AmqpException;
+
+    // 发送给默认 exchange 的指定 routing-key，发送前用messagePostProcessor处理消息
+    public void convertAndSend(String routingKey, Object message, MessagePostProcessor messagePostProcessor)
+            throws AmqpException;
+            
+    // 发送给指定 exchange 的指定 routing-key，发送前用messagePostProcessor处理消息
+    public void convertAndSend(String exchange, String routingKey, final Object message,
+            final MessagePostProcessor messagePostProcessor) throws AmqpException;
+</code></pre>
+
+<p>其实 RabbitTemplate 也有 send()方法，只是调用这些方法前要先将对象转换为 Message 类型，所以一般不用他们：</p>
+
+<pre><code class="language-JAVA">    void send(Message message) throws AmqpException;
+    void send(String routingKey, Message message) throws AmqpException;
+    void send(String exchange, String routingKey, Message message) throws AmqpException;
+</code></pre>
+
+<h3 id="toc_4">消费者 API，receive() 和 receiveAndConvert()</h3>
+
+<pre><code class="language-JAVA">    // 从默认队列中读取消息，返回 message 或 null 如果消息为空；
+    Message receive() throws AmqpException;
+    // 从指定队列中读取消息，返回 message 或 null 如果消息为空；
+    Message receive(String queueName) throws AmqpException;
+    // 从默认队列中读取消息，返回指定类型的对象 或 null 如果消息为空；
+    Object receiveAndConvert() throws AmqpException;
+    // 从指定队列中读取消息，返回指定类型的对象 或 null 如果消息为空；
+    Object receiveAndConvert(String queueName) throws AmqpException;
+</code></pre>
+
+<h2 id="toc_5">消费者</h2>
+
+<pre><code class="language-JAVA">    // 从默认队列中读取消息，返回 message 或 null 如果消息为空；
+    Message receive() throws AmqpException;
+    // 从指定队列中读取消息，返回 message 或 null 如果消息为空；
+    Message receive(String queueName) throws AmqpException;
+    // 从默认队列中读取消息，返回指定类型的对象 或 null 如果消息为空；
+    Object receiveAndConvert() throws AmqpException;
+    // 从指定队列中读取消息，返回指定类型的对象 或 null 如果消息为空；
+    Object receiveAndConvert(String queueName) throws AmqpException;
+</code></pre>
+
+<pre><code class="language-JAVA">Spittle spittle = (Spittle) rabbit.receiveAndConvert(&quot;spittle.alert.queue&quot;);
+</code></pre>
+
+<h3 id="toc_6">示例</h3>
+
+<pre><code class="language-XML">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans:beans xmlns:beans=&quot;http://www.springframework.org/schema/beans&quot;
+             xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+             xmlns=&quot;http://www.springframework.org/schema/rabbit&quot;
+             xsi:schemaLocation=&quot;http://www.springframework.org/schema/rabbit
+             http://www.springframework.org/schema/rabbit/spring-rabbit-1.0.xsd
+             http://www.springframework.org/schema/beans
+             http://www.springframework.org/schema/beans/spring-beans.xsd&quot;&gt;
+
+    &lt;!-- 导入基本配置 --&gt;
+    &lt;beans:import resource=&quot;amqp-shared.xml&quot; /&gt;
+
+    &lt;!--========= RabbitTemplate 配置.开始 =========--&gt;
+
+    &lt;!-- 未设置默认 exchnage 和 routing-key --&gt;
+    &lt;template id=&quot;rabbitTemplate&quot;
+              connection-factory=&quot;connectionFactory&quot; /&gt;
+
+    &lt;!-- or --&gt;
+
+    &lt;!-- 设置了默认 routing-key --&gt;
+    &lt;template id=&quot;rabbitTemplate&quot;
+              connection-factory=&quot;connectionFactory&quot;
+              routing-key=&quot;spittle.alerts&quot; /&gt;
+
+    &lt;!-- or --&gt;
+
+    &lt;!-- 设置了默认 exchange 和 routing-key --&gt;
+    &lt;template id=&quot;rabbitTemplate&quot;
+              connection-factory=&quot;connectionFactory&quot;
+              exchange=&quot;spittle.alert.exchange&quot;
+              routing-key=&quot;spittle.alerts&quot; /&gt;
+    &lt;!--========= RabbitTemplate 配置.结束 =========--&gt;
+
+&lt;/beans:beans&gt;
+</code></pre>
+
+<p>调用 RabbitTemplate 接口收发消息</p>
+
+<pre><code class="language-JAVA">package spittr.alerts;
+
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import spittr.domain.Spittle;
+
+public class AlertServiceImpl implements AlertService {
+
+    @Autowired
+    private RabbitTemplate rabbit;
+
+    public AlertServiceImpl(RabbitTemplate rabbit) {
+        this.rabbit = rabbit;
+    }
+
+    public void sendSpittleAlert(Spittle spittle) {
+        rabbit.convertAndSend(&quot;spittle.alert.exchange&quot;,
+                &quot;spittle.alerts&quot;,
+                spittle);
+    }
+
+    @Override
+    public Spittle receiveSpittleAlert() {
+        return (Spittle) rabbit.receiveAndConvert(&quot;spittle.alerts&quot;);
+    }
+}
+</code></pre>
+
+<p>启动生产者</p>
+
+<pre><code class="language-JAVA">package spittr.message;
+
+import java.util.Date;
+
+import org.junit.Ignore;
+import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import spittr.domain.Spittle;
+
+@Ignore
+public class ProducerMain {
+
+  public static void main(String[] args) throws Exception {
+    
+    ApplicationContext context = new ClassPathXmlApplicationContext(&quot;META-INF/spring/amqp-producer.xml&quot;);
+    AmqpTemplate template = (AmqpTemplate) context.getBean(&quot;rabbitTemplate&quot;);
+    
+    for (int i=0; i &lt; 20; i++) {
+      System.out.println(&quot;Sending message #&quot; + i);
+      Spittle spittle = new Spittle((long) i, null, &quot;Hello world (&quot; + i + &quot;)&quot;, new Date());
+      template.convertAndSend(spittle);
+      Thread.sleep(5000);
+    }
+    
+    System.out.println(&quot;Done!&quot;);
+    
+  }
+
+}
+</code></pre>
+
+<p>启动消费者</p>
+
+<pre><code>package spittr.message;
+
+import org.junit.Ignore;
+import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import spittr.alerts.AlertService;
+import spittr.alerts.AlertServiceImpl;
+import spittr.domain.Spittle;
+
+@Ignore
+public class ConsumerMain {
+
+    public static void main(String[] args) throws Exception {
+        ApplicationContext context = new ClassPathXmlApplicationContext(&quot;META-INF/spring/amqp-producer.xml&quot;);
+        RabbitTemplate template = (RabbitTemplate) context.getBean(&quot;rabbitTemplate&quot;);
+
+        AlertService alertService = new AlertServiceImpl(template);
+        while (true){
+            Spittle s = alertService.receiveSpittleAlert();
+            System.out.println(s);
+            Thread.sleep(5000);
+        }
+    }
+
+}
+</code></pre>
+
+<h2 id="toc_7">消息监听</h2>
+
+<pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans:beans xmlns=&quot;http://www.springframework.org/schema/rabbit&quot;
+             xmlns:beans=&quot;http://www.springframework.org/schema/beans&quot;
+             xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+             xsi:schemaLocation=&quot;http://www.springframework.org/schema/rabbit
+             http://www.springframework.org/schema/rabbit/spring-rabbit-1.0.xsd
+             http://www.springframework.org/schema/beans
+             http://www.springframework.org/schema/beans/spring-beans.xsd&quot;&gt;
+
+    &lt;!-- 导入基本配置 --&gt;
+    &lt;beans:import resource=&quot;amqp-shared.xml&quot; /&gt;
+
+    &lt;!--========= 监听配置.开始 =========--&gt;
+    &lt;listener-container connection-factory=&quot;connectionFactory&quot; &gt;
+        &lt;listener ref=&quot;spittleListener&quot;
+                  method=&quot;handleSpittleAlert&quot;
+                  queues=&quot;spittleAlertQueue&quot; /&gt;
+    &lt;/listener-container&gt;
+
+    &lt;beans:bean id=&quot;spittleListener&quot; class=&quot;spittr.alerts.SpittleAlertHandler&quot; /&gt;
+    &lt;!--========= 监听配置.结束 =========--&gt;
+
+&lt;/beans:beans&gt;
+</code></pre>
+
+<p>监听处理者：</p>
+
+<pre><code>package spittr.alerts;
+
+import spittr.domain.Spittle;
+
+public class SpittleAlertHandler {
+  
+  public void handleSpittleAlert(Spittle spittle) {
+    System.out.println(spittle.getMessage());
+  }
+
+}
+</code></pre>
+
+<p>发起监听：</p>
+
+<pre><code>package spittr.message;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class ConsumerMain {
+
+  public static void main(String[] args) {
+    ApplicationContext context = new ClassPathXmlApplicationContext(&quot;META-INF/spring/amqp-consumer.xml&quot;);
+  }
+
+}
+</code></pre>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Spring消息(1) JMS]]></title>
+    <link href="tianhaox.com/14754818073700.html"/>
+    <updated>2016-10-03T16:03:27+08:00</updated>
+    <id>tianhaox.com/14754818073700.html</id>
+    <content type="html"><![CDATA[
+<p><em>——《Spring实战》笔记 第17章</em></p>
+
+<p>第 15 章讲的 RMI、Hessian、Burlap、HttpInvoker 是同步通信，而消息通信是异步通信。</p>
+
+<p><strong>同步通信的限制</strong>：<br/>
+1. <strong>同步通信意味着等待</strong>，客户端必须等待远程方法结束后才能继续执行，服务端的性能也会客户端的性能；<br/>
+2. <strong>客户端通过服务接口与远程服务耦合</strong>，如果服务端接口有变化，客户端也要调整；<br/>
+3. <strong>客户端与远程服务的位置耦合</strong>，客户端必须配置服务的网络位置，如果网络拓扑调整，客户端也要重新配置；<br/>
+4. <strong>客户端与服务的可用性耦合</strong>，远程服务不可用，客户端也不可用。</p>
+
+<p><strong>异步消息的优势</strong>：<br/>
+1. <strong>无需等待</strong>，客户端不必等待消息被处理甚至是被投递，客户端只要把消息发送给消息代理；<br/>
+2. <strong>面向消息和解耦</strong>，异步消息是以数据为中心的，客户端没有与特定的方法签名（JAVA 接口）绑定，任何可以处理数据队列或主题订阅者都可以处理由客户端发送的消息，而客户端不必了解远程服务的任何范畴；<br/>
+3. <strong>位置独立</strong>，客户端和服务端无需知道对方是谁，对方的网络位置，他们只与消息中心通讯，客户端和服务端网络位置的改变不会影响另一端，除非消息中心网络位置调整了；<br/>
+4. <strong>确保投递</strong>，消息被存储在消息中心，即使服务端不可用了消息也不会丢失，在服务端回复后可以继续处理消息；</p>
+
+<h2 id="toc_0">安装并启动 ActiveMQ 服务</h2>
+
+<p>Mac OS</p>
+
+<pre><code>brew install apache-activemq # 安装
+activemq start  # 启动
+netstat -an | grep 61616 # 查看端口是否监听
+</code></pre>
+
+<p>在浏览器管理消息：<a href="http://localhost:8161/admin">http://localhost:8161/admin</a>   用户名/密码: admin/admin</p>
+
+<h2 id="toc_1">配置</h2>
+
+<h3 id="toc_2">配置消息中心连接工厂</h3>
+
+<pre><code class="language-XML">&lt;!-- 使用默认 IP 和端口 --&gt;
+&lt;bean id=&quot;connectionFactory&quot;
+      class=&quot;org.apache.activemq.spring.ActiveMQConnectionFactory&quot; /&gt;
+&lt;!-- or --&gt;
+&lt;!-- 指定 IP 和端口 --&gt;
+&lt;bean id=&quot;connectionFactory&quot;
+      class=&quot;org.apache.activemq.spring.ActiveMQConnectionFactory&quot;
+      p:brokerURL=&quot;tcp://localhost:61616&quot; /&gt;
+&lt;!-- or --&gt;
+&lt;!--  首先要声明空间：xmlns:amq=&quot;http://activemq.apache.org/schema/core&quot; --&gt;
+&lt;amq:connectionFactory id=&quot;connectionFactory&quot; brokerURL=&quot;tcp://localhost:61616&quot;/&gt;
+</code></pre>
+
+<h3 id="toc_3">声明 ActiveMQ 消息目的地</h3>
+
+<pre><code>&lt;!--队列类型--&gt;
+&lt;bean id=&quot;spittleQueue&quot; class=&quot;org.apache.activemq.command.ActiveMQQueue&quot;
+      c:_=&quot;spittle.alert.queue&quot; /&gt;
+&lt;!-- or --&gt;
+&lt;!--主题类型--&gt;
+&lt;bean id=&quot;spittleTopic&quot; class=&quot;org.apache.activemq.command.ActiveMQTopic&quot;
+      c:_=&quot;spittle.alert.topic&quot; /&gt;
+&lt;!-- or --&gt;
+&lt;!-- 队列类型 --&gt;
+&lt;amq:queue id=&quot;spittleQueue&quot; physicalName=&quot;spittle.alert.queue&quot; /&gt;
+&lt;!-- or --&gt;
+&lt;!-- 主题类型 --&gt;
+&lt;amq:topic id=&quot;spittleTopic&quot; physicalName=&quot;spittle.alert.topic&quot; /&gt;
+</code></pre>
+
+<h3 id="toc_4">配置 JMS 模板</h3>
+
+<pre><code class="language-XML">&lt;!-- 最简配置 --&gt;
+&lt;bean id=&quot;jmsTemplate&quot;
+      class=&quot;org.springframework.jms.core.JmsTemplate&quot;
+       c:_-ref=&quot;connectionFactory&quot; /&gt;
+&lt;!-- or --&gt;       
+&lt;!-- + 设置默认目的地 --&gt;
+&lt;bean id=&quot;jmsTemplate&quot;
+      class=&quot;org.springframework.jms.core.JmsTemplate&quot;
+      c:_-ref=&quot;connectionFactory&quot;
+      p:defaultDestination-ref=&quot;spittleQueue&quot;/&gt;
+      
+&lt;!-- or --&gt;
+
+&lt;!-- + 设置消息转换器 --&gt;
+&lt;bean id=&quot;messageConverter&quot; 
+      class=&quot;org.springframework.jms.support.converter.MappingJackson2MessageConverter&quot; /&gt;
+      
+&lt;bean id=&quot;jmsTemplate&quot;
+      class=&quot;org.springframework.jms.core.JmsTemplate&quot;
+      c:_-ref=&quot;connectionFactory&quot;
+      p:defaultDestinationName=&quot;spittle.alert.queue&quot;
+      p:messageConverter-ref=&quot;messageConverter&quot; /&gt;      
+</code></pre>
+
+<h3 id="toc_5">配置消息监听器</h3>
+
+<hr/>
+
+<h2 id="toc_6">发送消息 send()</h2>
+
+<p>JmsOperations 接口 send()方法有3个重载方法，JmsTemplate实现了JmsOperations接口</p>
+
+<pre><code class="language-JAVA">    // 发送到默认目的地，要求配置默认目的地
+    void send(MessageCreator messageCreator) throws JmsException;
+    // 发送到指定目的地
+    void send(Destination destination, MessageCreator messageCreator) throws JmsException;
+    // 发送到指定目的地
+    void send(String destinationName, MessageCreator messageCreator) throws JmsException;
+</code></pre>
+
+<p>通过上面的的接口可以看出，在发送消息时可选择发送到默认目的地或者指定目的地， 目的地可以通过应用或者名称指定，另外，这些方法都有MessageCreator类型的参数，这是一个接口，实现该接口的方法要实现将消息体对象转化为javax.jms.Message类型的对象。</p>
+
+<p>示例：</p>
+
+<pre><code class="language-发送到指定目的地">  public AlertServiceImpl(JmsOperations jmsOperations) {
+    this.jmsOperations = jmsOperations;
+  }
+
+  // 发送到指定目的地
+  public void sendSpittleAlert(final Spittle spittle) {
+    jmsOperations.send(
+      &quot;spittle.alert.queue&quot;,
+      new MessageCreator() {
+        public Message createMessage(Session session)
+                       throws JMSException {
+          return session.createObjectMessage(spittle);
+        }
+      }
+    );
+  }
+
+  // 发送到默认目的地
+  public void sendSpittleAlert2Defualt(final Spittle spittle) {
+    jmsOperations.send(
+      new MessageCreator() {
+        public Message createMessage(Session session)
+                       throws JMSException {
+          return session.createObjectMessage(spittle);
+        }
+      }
+    );
+  }
+</code></pre>
+
+<hr/>
+
+<h2 id="toc_7">发送消息时，对消息进行转换 convertAndSend()</h2>
+
+<pre><code>    void convertAndSend(Object message) throws JmsException;
+    void convertAndSend(Destination destination, Object message) throws JmsException;
+    void convertAndSend(String destinationName, Object message) throws JmsException;
+    void convertAndSend(Object message, MessagePostProcessor postProcessor)
+        throws JmsException;
+</code></pre>
+
+<p>可选的消息转换器：</p>
+
+<ol>
+<li>MappingJacksonMessageConverter, Jackson JSON 库，JSON 格式转换，Spring 4有已废除；</li>
+<li>MappingJacksonMessageConverter, Jackson 2 JSON库，JSON 格式转换；</li>
+<li>MarshallingMessageConverter, JAXB库，XML 格式转换；</li>
+<li>SimpleMessageConverter，默认转换器，转换String 与 TextMessage，Map 与 MapMessage（ByteMessage），Serializable 对象与 ObjectMessage。</li>
+</ol>
+
+<p>默认消息转换器是 SimpleMessageConverter，如果要使用其它转换器，可以设置默认转换器：</p>
+
+<pre><code>&lt;!-- 消息转换器 --&gt;
+&lt;bean id=&quot;messageConverter&quot;
+          class=&quot;org.springframework.jms.support.converter.MappingJackson2MessageConverter&quot;&gt;
+        &lt;property name=&quot;typeIdMappings&quot;&gt;
+            &lt;map&gt;
+                &lt;entry key=&quot;Spittle&quot; value=&quot;spittr.domain.Spittle&quot;/&gt;
+            &lt;/map&gt;
+        &lt;/property&gt;
+        &lt;property name=&quot;typeIdPropertyName&quot; value=&quot;Spittle&quot;/&gt;
+    &lt;/bean&gt;
+      
+&lt;bean id=&quot;jmsTemplate&quot;
+      class=&quot;org.springframework.jms.core.JmsTemplate&quot;
+      c:_-ref=&quot;connectionFactory&quot;
+      p:defaultDestinationName=&quot;spittle.alert.queue&quot;
+      p:messageConverter-ref=&quot;messageConverter&quot; /&gt;     
+</code></pre>
+
+<p>代码：</p>
+
+<pre><code class="language-JAVA">    public void sendAndConvertSpittleAlert2Default(Spittle spittle) {
+        jmsOperations.convertAndSend(spittle);
+    }
+
+    public void sendAndConvertSpittleAlert(Spittle spittle) {
+        jmsOperations.convertAndSend(&quot;spittle.alert.queue&quot;,spittle);
+    }
+</code></pre>
+
+<p>实验后发现 MappingJackson2MessageConverter 是个大坑， 必须配置typeIdPropertyName 和 typeIdMappings 否则无法转换，而且生产者和消费者都必须配置。<br/>
+由于监听没有该配置项，所以监听不能用MappingJackson2MessageConverter。</p>
+
+<h2 id="toc_8">接收消息 receive() 和 receiveAndConvert()</h2>
+
+<p>接受消息有 receive() 和 receiveAndConvert() 2个方法，前者返回的是 ObjectMessage，ObjectMessage 有getObject()方法获取消息体，但是会抛出检查下型异常 JMSException，一般 用 <code>JmsUtils.convertJmsAccessException(e)</code>将异常转化为非检查型异常，后缀可以直接将消息转化为实体对象，且抛出的是非检查型异常。</p>
+
+<pre><code class="language-JAVA">    public Spittle getSpittleAlert() {
+        try {
+            ObjectMessage message = (ObjectMessage) jmsOperations.receive();
+            return (Spittle) message.getObject();
+        } catch (JMSException e) {
+            // 将 JMSException异常转换为未检查行异常 JmsException
+            throw JmsUtils.convertJmsAccessException(e); 
+        }
+    }
+
+    public Spittle retrieveSpittleAlert() {
+        return (Spittle) jmsOperations.receiveAndConvert();
+    }
+</code></pre>
+
+<p>启动消息处理：</p>
+
+<pre><code class="language-JAVA">     public static void main(String[] args) {
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(&quot;META-INF/spring/messaging.xml&quot;);
+        AlertService alertService = context.getBean(AlertService.class);
+        while (true) {
+            Spittle s = alertService.retrieveSpittleAlert();
+            System.out.println(s);
+        }
+    }
+</code></pre>
+
+<p>receive() 和 receiveAndConvert() 的缺点是 他们都是同步的，只有在有消息是才会唤醒，否则一直等待。</p>
+
+<hr/>
+
+<h2 id="toc_9">配置和使用消息监听器</h2>
+
+<p>前面的 receive() 和 receiveAndConvert() 是接收并处理消息的一种方法，但是需要显式的获取消息再处理。</p>
+
+<p>EJB2 规范引入了 消息驱动 Bean（message-driven bean, MDB）,MDB 是可以异步处理消息的 EJB,它将目的地中消息作为事件，并对这些事件进行相应。而与之相反的是，同步消息接受这在消息可用前一直处理堵塞状态。</p>
+
+<p>EJB2 MDB的唯一缺点是它们必须实现 java.ejb.MessageDrivenBean,此外还必须实现一些 EJB 生命周期的回调方法。简而言之，EJB 2 MDB 不是纯 POJO。</p>
+
+<p>EJB 3规范中，MDB 进一步简化， 使其更像 POJO，不在需要实现 MessageDrivenBean，而是实现更通用的 javax.jms.MessageListener接口，并使用 @MessageDriven 注解标注 MDB。</p>
+
+<p>Spring 2.0提供了它自己的消息驱动 bean 来满足接收异步消息的需求，形式与 EJB 3 的 MDB相似。</p>
+
+<p>Spring 提供了以 POJO 的方式处理消息的能力。</p>
+
+<p>第一步，编写处理消息对象的代码，跟普通代码没什么区别，以下代码没有迹象表明它跟 JMS 有关，但是通过配置就可以使用它处理消息。</p>
+
+<pre><code class="language-JAVA">package spittr.alerts;
+
+import spittr.domain.Spittle;
+
+public class SpittleAlertHandler {
+
+    public void handleSpittleAlert(Spittle spittle) {
+        System.out.println(spittle.getMessage());
+    }
+
+}
+</code></pre>
+
+<p>第二步，配置消息监听</p>
+
+<pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+       xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+       xmlns:jms=&quot;http://www.springframework.org/schema/jms&quot;
+       xmlns:amq=&quot;http://activemq.apache.org/schema/core&quot;
+       xsi:schemaLocation=&quot;http://www.springframework.org/schema/jms
+        http://www.springframework.org/schema/jms/spring-jms-3.2.xsd
+        http://activemq.apache.org/schema/core
+        http://activemq.apache.org/schema/core/activemq-core.xsd
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd&quot;&gt;
+
+    &lt;amq:connectionFactory id=&quot;connectionFactory&quot; brokerURL=&quot;tcp://localhost:61616&quot;/&gt;
+
+    &lt;bean id=&quot;spittleHandler&quot; class=&quot;spittr.alerts.SpittleAlertHandler&quot; /&gt;
+
+    &lt;jms:listener-container&gt;
+        &lt;jms:listener destination=&quot;spittle.alert.queue&quot;
+                      ref=&quot;spittleHandler&quot;
+                      method=&quot;handleSpittleAlert&quot;
+        /&gt;
+    &lt;/jms:listener-container&gt;
+
+&lt;/beans&gt;
+</code></pre>
+
+<p>最后，启动监听应用：</p>
+
+<pre><code class="language-JAVA">package spittr;
+
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class JmsListenerMain {
+
+    public static void main(String[] args) {
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(&quot;META-INF/spring/message_listener.xml&quot;);
+    }
+}
+</code></pre>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Spring REST API (2) 客户端]]></title>
+    <link href="tianhaox.com/14753987093319.html"/>
+    <updated>2016-10-02T16:58:29+08:00</updated>
+    <id>tianhaox.com/14753987093319.html</id>
+    <content type="html"><![CDATA[
+<p><em>——《Spring实战》笔记 第16章</em></p>
+
+<h2 id="toc_0">传统的 HttpClient</h2>
+
+<h2 id="toc_1">RestTemplate</h2>
+
+<pre><code class="language-JAVA">package org.springframework.web.client;
+
+public class RestTemplate extends InterceptingHttpAccessor implements RestOperations {
+...
+}
+</code></pre>
+
+<p>RestTemplate定义了11个独立的操作：</p>
+
+<table>
+<thead>
+<tr>
+<th> 方法</th>
+<th>描述</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>delete()</td>
+<td>在特定的URL上对资源指定 HTTP DELETE 操作</td>
+</tr>
+<tr>
+<td>exchange()</td>
+<td>在URL上执行 HTTP 方法，返回包含对象的 ResponseEntity，这个对象是从相应提中映射得到的</td>
+</tr>
+<tr>
+<td>execute()</td>
+<td>在 URL 上执行特定的 HTTP 方法，返回一个从响应体映射得到的对象</td>
+</tr>
+<tr>
+<td>getForEntity()</td>
+<td>发送一个 HTTP GET 请求，返回的 ResponseEntity 包含了响应体所映射成的对象</td>
+</tr>
+<tr>
+<td>getForObject()</td>
+<td>发送一个 HTTP GET 请求，返回的请求体将映射成一个对象</td>
+</tr>
+<tr>
+<td>headForHeaders()</td>
+<td>发送一个 HTTP HEAD 请求，返回包含特定资源 URL 的 HTTP 头</td>
+</tr>
+<tr>
+<td>optionsForAllow()</td>
+<td>发送一个 HTTP OPTIONS 请求，返回特定的 URL 的 Allow 头信息</td>
+</tr>
+<tr>
+<td>postForEntity()</td>
+<td>POST 数据到一个 URL，返回一个对象的 ResponseEntity，这个对象是从响应体映射得到的</td>
+</tr>
+<tr>
+<td>postForLocation()</td>
+<td>POST 数据到一个URL，返回新创建资源的URL</td>
+</tr>
+<tr>
+<td>postForObject()</td>
+<td>POST 数据到一个URL，返回根据响应体匹配形成的对象</td>
+</tr>
+<tr>
+<td>put()</td>
+<td>PUT 资源到特定的 URL</td>
+</tr>
+</tbody>
+</table>
+
+<p>这些操作都提供了 3 种形式的重载方法：</p>
+
+<ol>
+<li>一个使用 java.net.URI 作为 URL 格式，不支持参数化 URL；</li>
+<li>一个使用 String 作为URL 格式，并使用 Map 指明 URL 参数；</li>
+<li>一个使用 String 作为 URL 格式，并使用可变参数列表指明 URL 参数；</li>
+</ol>
+
+<h3 id="toc_2">GET 资源 getForObject、getForEntity</h3>
+
+<p>从 org.springframework.web.client.RestTemplate 类中可以看到有以下获取 GET 资源的方法方法：</p>
+
+<pre><code>&lt;T&gt; T getForObject(String url, Class&lt;T&gt; responseType, Object... uriVariables) throws RestClientException;
+&lt;T&gt; T getForObject(String url, Class&lt;T&gt; responseType, Map&lt;String, ?&gt; uriVariables) throws RestClientException;
+&lt;T&gt; T getForObject(URI url, Class&lt;T&gt; responseType) throws RestClientException;
+
+&lt;T&gt; ResponseEntity&lt;T&gt; getForEntity(String url, Class&lt;T&gt; responseType, Object... uriVariables) throws RestClientException;
+&lt;T&gt; ResponseEntity&lt;T&gt; getForEntity(String url, Class&lt;T&gt; responseType, Map&lt;String, ?&gt; uriVariables) throws RestClientException;
+&lt;T&gt; ResponseEntity&lt;T&gt; getForEntity(URI url, Class&lt;T&gt; responseType) throws RestClientException;
+</code></pre>
+
+<p>可以看出这种 getForObject、getForEntity 方法的3个重载方法，<strong>getForObject 和 getForEntity 方法的区别是：getForObject 直接获取资源，返回的结果就是要获取的对象，丢弃 HttpStatus 和 Headers 信息，而 getForEntity 方法完整的保留了这些信息，这些信息包括返回的对象全部放在一个 ResponseEntity 对象中，使用这个方法可以做更多的事情。</strong>，通过代码<code>public class ResponseEntity&lt;T&gt; extends HttpEntity&lt;T&gt;</code>可以看到 ResponseEntity 其实是 HttpEntity 的子类，通过<code>getHttpStatus()</code>可以获取 HTTP 返回码, 通过<code>getHeaders()</code> 方法可以获取返回头，通过 <code>getBody()</code>可以获取返回对象。</p>
+
+<h4 id="toc_3">关于返回头信息 HttpHeaders</h4>
+
+<ol>
+<li>通过 response.getHeaders()可以获取到 返回头信息对象 HttpHeaders;</li>
+<li>HttpHeaders 类提供了2类方法：getXXX()和 getFirstXXX(),XXX代表头信息关键字，前者返回列表，后者返回列表中的第一个；</li>
+<li>HttpHeaders包含的信息通过类中枚举值定义就可以看出来：</li>
+</ol>
+
+<pre><code>    private static final long serialVersionUID = -8578554704772377436L;
+
+    private static final String ACCEPT = &quot;Accept&quot;;
+
+    private static final String ACCEPT_CHARSET = &quot;Accept-Charset&quot;;
+
+    private static final String ALLOW = &quot;Allow&quot;;
+
+    private static final String CACHE_CONTROL = &quot;Cache-Control&quot;;
+
+    private static final String CONNECTION = &quot;Connection&quot;;
+
+    private static final String CONTENT_DISPOSITION = &quot;Content-Disposition&quot;;
+
+    private static final String CONTENT_LENGTH = &quot;Content-Length&quot;;
+
+    private static final String CONTENT_TYPE = &quot;Content-Type&quot;;
+
+    private static final String DATE = &quot;Date&quot;;
+
+    private static final String ETAG = &quot;ETag&quot;;
+
+    private static final String EXPIRES = &quot;Expires&quot;;
+
+    private static final String IF_MODIFIED_SINCE = &quot;If-Modified-Since&quot;;
+
+    private static final String IF_NONE_MATCH = &quot;If-None-Match&quot;;
+
+    private static final String LAST_MODIFIED = &quot;Last-Modified&quot;;
+
+    private static final String LOCATION = &quot;Location&quot;;
+
+    private static final String ORIGIN = &quot;Origin&quot;;
+
+    private static final String PRAGMA = &quot;Pragma&quot;;
+
+    private static final String UPGRADE = &quot;Upgrade&quot;;
+</code></pre>
+
+<h3 id="toc_4">PUT 资源</h3>
+
+<ol>
+<li>以 put 方式发送请求；</li>
+<li>注意返回值是 void，而不是对象，相当于无法获取服务端相应的相关 Header 信息。</li>
+</ol>
+
+<pre><code>    void put(String url, Object request, Object... uriVariables) throws RestClientException;
+    void put(String url, Object request, Map&lt;String, ?&gt; uriVariables) throws RestClientException;
+    void put(URI url, Object request) throws RestClientException;
+</code></pre>
+
+<h3 id="toc_5">DELETE 资源</h3>
+
+<ol>
+<li>以 put 方式发送请求；</li>
+<li>注意返回值是 void，而不是对象，相当于无法获取服务端相应的相关 Header 信息。</li>
+</ol>
+
+<pre><code>    void delete(String url, Object request, Object... uriVariables) throws RestClientException;
+    void delete(String url, Object request, Map&lt;String, ?&gt; uriVariables) throws RestClientException;
+    void delete(URI url, Object request) throws RestClientException;
+</code></pre>
+
+<h3 id="toc_6">POST 资源</h3>
+
+<ol>
+<li>post方法跟 get 方法一样，但是比 get 方法多了3个 postForLocation方法；</li>
+<li>postForLocation 方法会忽略掉返回的其它信息，只获取返回 Headers的 Location 信息，类型为 URI;</li>
+<li>postForLocation 方法对服务端有要求，在 post 资源成功后要往返回的头部设置 Location 信息。</li>
+</ol>
+
+<pre><code>&lt;T&gt; T postForObject(String url, Class&lt;T&gt; responseType, Object... uriVariables) throws RestClientException;
+&lt;T&gt; T postForObject(String url, Class&lt;T&gt; responseType, Map&lt;String, ?&gt; uriVariables) throws RestClientException;
+&lt;T&gt; T postForObject(URI url, Class&lt;T&gt; responseType) throws RestClientException;
+
+&lt;T&gt; ResponseEntity&lt;T&gt; postForEntity(String url, Class&lt;T&gt; responseType, Object... uriVariables) throws RestClientException;
+&lt;T&gt; ResponseEntity&lt;T&gt; postForEntity(String url, Class&lt;T&gt; responseType, Map&lt;String, ?&gt; uriVariables) throws RestClientException;
+&lt;T&gt; ResponseEntity&lt;T&gt; postForEntity(URI url, Class&lt;T&gt; responseType) throws RestClientException;
+
+URI postForLocation(String url, Object request, Object... uriVariables) throws RestClientException;
+URI postForLocation(String url, Object request, Map&lt;String, ?&gt; uriVariables) throws RestClientException;
+URI postForLocation(URI url, Object request) throws RestClientException;
+</code></pre>
+
+<h3 id="toc_7">交换资源</h3>
+
+<p>exchange 方法是唯一能够在发送给服务器的请求中设置头信息的方法。</p>
+
+<pre><code class="language-JAVA">&lt;T&gt; ResponseEntity&lt;T&gt; exchange(String url, HttpMethod method, HttpEntity&lt;?&gt; requestEntity,
+            Class&lt;T&gt; responseType, Object... uriVariables) throws RestClientException;
+&lt;T&gt; ResponseEntity&lt;T&gt; exchange(String url, HttpMethod method, HttpEntity&lt;?&gt; requestEntity,
+            Class&lt;T&gt; responseType, Map&lt;String, ?&gt; uriVariables) throws RestClientException;
+&lt;T&gt; ResponseEntity&lt;T&gt; exchange(URI url, HttpMethod method, HttpEntity&lt;?&gt; requestEntity,
+            Class&lt;T&gt; responseType) throws RestClientException;
+&lt;T&gt; ResponseEntity&lt;T&gt; exchange(String url,HttpMethod method, HttpEntity&lt;?&gt; requestEntity,
+            ParameterizedTypeReference&lt;T&gt; responseType, Object... uriVariables) throws RestClientException;
+&lt;T&gt; ResponseEntity&lt;T&gt; exchange(String url, HttpMethod method, HttpEntity&lt;?&gt; requestEntity,
+            ParameterizedTypeReference&lt;T&gt; responseType, Map&lt;String, ?&gt; uriVariables) throws RestClientException;
+&lt;T&gt; ResponseEntity&lt;T&gt; exchange(URI url, HttpMethod method, HttpEntity&lt;?&gt; requestEntity,
+            ParameterizedTypeReference&lt;T&gt; responseType) throws RestClientException;
+</code></pre>
+
+<h3 id="toc_8">注意事项</h3>
+
+<ol>
+<li>发送请求的 Content-Type以及发送对象的形式怎么设置的？</li>
+</ol>
+
+<h2 id="toc_9">使用用例：</h2>
+
+<pre><code class="language-JAVA">package spittr.web;
+
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
+import spittr.model.Spitter;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Created by tianhao on 16/10/2.
+ */
+public class SpringHttpClient {
+
+    public Spitter getSpitterForObject1(Long id) {
+        RestTemplate rest = new RestTemplate();
+        return rest.getForObject(&quot;http://localhost:8080/getSpitter/{id}&quot;,Spitter.class,id);
+    }
+
+    public Spitter getSpitterForObject2(Long id) {
+        RestTemplate rest = new RestTemplate();
+        Map map = new HashMap&lt;&gt;();
+        map.put(&quot;id&quot;, id);
+        return rest.getForObject(&quot;http://localhost:8080/getSpitter/{id}&quot;,
+                Spitter.class,
+                map);
+    }
+
+    public Spitter getSpitterForObject3(Long id) {
+        try {
+            RestTemplate rest = new RestTemplate();
+            URI uri = new URI(&quot;http://localhost:8080/getSpitter/&quot;+ id);
+            return rest.getForObject(uri,Spitter.class);
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Spitter getSpitterForEntity1(Long id) {
+        RestTemplate rest = new RestTemplate();
+        ResponseEntity&lt;Spitter&gt; response = rest.getForEntity(&quot;http://localhost:8080/getSpitter/{id}&quot;,Spitter.class,id);
+        if (response.getStatusCode() == HttpStatus.NOT_MODIFIED){
+            throw new NotModifedException();
+        }
+        return response.getBody();
+    }
+
+    public Spitter getSpitterForEntity2(Long id) {
+        RestTemplate rest = new RestTemplate();
+        Map map = new HashMap&lt;&gt;();
+        map.put(&quot;id&quot;, id);
+        ResponseEntity&lt;Spitter&gt; response= rest.getForEntity(&quot;http://localhost:8080/getSpitter/{id}&quot;,
+                Spitter.class,
+                map);
+        return response.getBody();
+    }
+
+    public Spitter getSpitterForEntity3(Long id) {
+        try {
+            RestTemplate rest = new RestTemplate();
+            URI uri = new URI(&quot;http://localhost:8080/getSpitter/&quot;+ id);
+            ResponseEntity&lt;Spitter&gt; response = rest.getForEntity(uri,Spitter.class);
+            return response.getBody();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void putSpitter1(){
+        RestTemplate rest = new RestTemplate();
+        rest.put(&quot;http://localhost:8080/putSpitter/{id}&quot;, new Spitter(), 1);
+    }
+
+    public void putSpitter2(){
+        RestTemplate rest = new RestTemplate();
+        Map m = new HashMap();
+        m.put(&quot;id&quot;, 2);
+        rest.put(&quot;http://localhost:8080/putSpitter/{id}&quot;, new Spitter(), m);
+    }
+
+    public void putSpitter3(){
+        RestTemplate rest = new RestTemplate();
+        rest.put(URI.create(&quot;http://localhost:8080/putSpitter/&quot;+3), new Spitter());
+    }
+
+    public Spitter exchangeGetSpitter1(){
+        RestTemplate rest = new RestTemplate();
+        ResponseEntity&lt;Spitter&gt; response = rest.exchange(&quot;http://localhost:8080/getSpitter/{id}&quot;, HttpMethod.GET,null,Spitter.class,1);
+        return response.getBody();
+    }
+
+    public Spitter exchangePostSpitter(){
+        RestTemplate rest = new RestTemplate();
+        MultiValueMap&lt;String,String&gt; headers = new LinkedMultiValueMap&lt;&gt;();
+        headers.add(&quot;Accept&quot;, &quot;application/json&quot;);
+        headers.add(&quot;Content-Type&quot;, &quot;application/json&quot;);
+        HttpEntity&lt;Object&gt; requestEntity = new HttpEntity&lt;Object&gt;(new Spitter(), headers);
+        ResponseEntity&lt;Spitter&gt; response = rest.exchange(&quot;http://localhost:8080/consumesJsonOrXmlSpitter&quot;, HttpMethod.POST,requestEntity,Spitter.class);
+        return response.getBody();
+    }
+
+    public static void main(String[] args) {
+        SpringHttpClient client = new SpringHttpClient();
+        System.out.println(&quot;==== put ====&quot;);
+        client.putSpitter1();
+        client.putSpitter2();
+        client.putSpitter3();
+        System.out.println(&quot;==== getSpitterForObjectX ====&quot;);
+        Spitter s = client.getSpitterForObject1(1L);
+        System.out.println(s);
+        s = client.getSpitterForObject2(2L);
+        System.out.println(s);
+        s = client.getSpitterForObject3(3L);
+        System.out.println(s);
+        System.out.println(&quot;==== getSpitterForEntityX ====&quot;);
+        s = client.getSpitterForEntity1(1L);
+        System.out.println(s);
+        s = client.getSpitterForEntity2(2L);
+        System.out.println(s);
+        s = client.getSpitterForEntity3(3L);
+        System.out.println(s);
+        System.out.println(&quot;==== exchange ====&quot;);
+        s = client.exchangeGetSpitter1();
+        System.out.println(s);
+        s = client.exchangePostSpitter();
+        System.out.println(s);
+        return;
+    }
+}
+</code></pre>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Spring REST API (1) 服务端]]></title>
+    <link href="tianhaox.com/14749684233883.html"/>
+    <updated>2016-09-27T17:27:03+08:00</updated>
+    <id>tianhaox.com/14749684233883.html</id>
+    <content type="html"><![CDATA[
+<p><em>——《Spring实战》笔记 第16章</em></p>
+
+<h2 id="toc_0">用 @RestController 替代 @Controller + @ResponseBody</h2>
+
+<p>如果一个类所有的接口都不是返回视图的，都是返回数据的，用@RestController 替代 @Controller，可以省去类中大量的  @ResponseBody 注解。</p>
+
+<h2 id="toc_1">强大的 @RequestMapping 注解</h2>
+
+<h3 id="toc_2">1. value 指定接口地址</h3>
+
+<p>value指定接口地址，可用在 Controller类和 Controller类的public方法中，类和方法有层级关系，即最终地址是 “类的value/方法的value”， 如果类上面没有指定value，最终地址是“/方法的value”。</p>
+
+<p>常用示例：</p>
+
+<pre><code class="language-JAVA">@RequestMapping(value = &quot;spitter&quot;)
+@RequestMapping(value = &quot;spitter/{id}&quot;)   // 使用id占位符
+
+/*
+ * 使用多个占位符，且参数d使用{c}占位符
+ * http://localhost:8080/spitter/1/2/3
+ */
+@RequestMapping(value = &quot;spitter/{a}/{b}/{c}&quot;)
+public Map spitter(@PathVariable(&quot;a&quot;) String a, 
+                       @PathVariable(&quot;b&quot;) String b, 
+                       @PathVariable(&quot;c&quot;) String d) {
+    Map&lt;String,String&gt; m = new HashMap();
+    m.put(&quot;a&quot;, a);
+    m.put(&quot;b&quot;, b);
+    m.put(&quot;c&quot;, d);
+    return m;
+}
+</code></pre>
+
+<p>使用占位符时，要使用 <code>@PathVariable(value=&quot;id&quot;)</code>修饰方法中的某个参数，如果@PathVariable没有指定value, Spring 会根据参数名称匹配占位符，但是还是设置比较安全，笔者曾用相同的代码和配置，遇到在Mac下可以匹配但是Linux下不匹配的情况，导致了在Linux下接口不可用错误。</p>
+
+<h3 id="toc_3">2. method 指定接受的Request Method（对应 HTTP Request Method ）</h3>
+
+<p>常用示例：</p>
+
+<pre><code>// 接受所有method的请求
+@RequestMapping(value = &quot;getSpitter&quot;)  
+or
+// 只接受get的请求
+@RequestMapping(value = &quot;getSpitter&quot;, method = RequestMethod.GET) 
+or
+// 只接受post的请求
+@RequestMapping(value = &quot;getSpitter&quot;, method = RequestMethod.POST) 
+or
+// 只接受get和post的请求
+@RequestMapping(value = &quot;getSpitter&quot;, method = {RequestMethod.GET, RequestMethod.POST})
+</code></pre>
+
+<ol>
+<li>不指定method时，默认接受所有类型的请求；</li>
+<li>在一个RequestMapping中可以指定一个或多个method类型，指定之后的接口（方法）只接受指定类型（范围）的请求；</li>
+<li>对于相同的value, 可以用一个方法处理所有method类型的请求， 也可以拆成多个方法分别处理部分类型的method请求，Spring会将相应的method的请求指派到对应的方法处理，但是要注意，多个方法的method集合不能有交集，否则，程序初始化时不会发现，在收到请求后Spring才会抛出异常<code>HTTP Status 500 - Request processing failed; nested exception is java.lang.IllegalStateException: Ambiguous handler methods mapped for HTTP path ...</code>。</li>
+<li>Spring会指定符合请求method类型的方法处理请求，如果没有符合条件的会报404错误，而且是由Spring框架抛出异常，不会流转到接口方法中。</li>
+</ol>
+
+<h3 id="toc_4">3. produces 指定返回形式（对应HTTP Accept）</h3>
+
+<p>常用示例:</p>
+
+<pre><code>// 不指定，根据其它条件决定返回形式
+@RequestMapping(value = &quot;xmlSpitter&quot;) 
+// 指定xml
+@RequestMapping(value = &quot;xmlSpitter&quot;, produces = &quot;application/xml&quot;)
+// 指定json
+@RequestMapping(value = &quot;jsonSpitter&quot;, produces = &quot;application/json&quot;)
+// 指定3个，优先第一个
+@RequestMapping(value = &quot;multiSpitter&quot;, produces = {&quot;application/json&quot;, &quot;application/xml&quot;,  &quot;text/plain&quot;})
+</code></pre>
+
+<p>Http 请求的Accept 由A/B 两部分组成。A有：application、text、image。B有很多种，常用的有：json，xml，html，plain，有时还带版本号。由A和B可以产生很多组合，但是我们程序最终返回形式一般由B部分决定。</p>
+
+<p>produces是为了指定接口返回数据的形式而存在的，有以下规则：</p>
+
+<ol>
+<li>不指定produces时，Spring使用自有的一套规则决定将接口对应的方法返回的对象序列化成对应的形式，决定因素有接口后缀、请求的Accept类型等等。
+
+<ol>
+<li>接口后缀为json时返回json；</li>
+<li>接口后缀.xml返回xml形式;</li>
+<li>Accept的B是xml时序列化成XML形式</li>
+<li>当Accept的B是json时序列化成json形式。</li>
+</ol></li>
+<li>使用produces可以指定一个或多个类型，当指定produces时，指定接口只会返回指定范围的形式，当指定多个形式时，指定顺序会影响优先级，其它影响因素相同的情况下，优先返回第一个；</li>
+<li>当Spring决定返回某种形式时，在classpath中必须有指定类型的序列化库，开发者可以为Spring指定序列化库，如果没有指定，Spring会根据框架中的指定的常用序列化库查找classpath的库，使用找到的库序列化，如果没找到就抛出异常。PS:JDK6开始自带了XML系列化库JAXB，不需要增加依赖包。</li>
+<li>当决定返回xml形式时，返回的对象的类要有@XmlRootElement/@XmlElement之类的注解，使用注解时至少要有@XmlRootElement注解，另外，如果类中有@XmlRootElement注解，会将返回xml形式的优先级提高（经试验，如果没有指定produces，而类中有这个注解，会默认返回xml形式,否则返回json）。</li>
+</ol>
+
+<h3 id="toc_5">4. consumes + @RequestBody 指定request body类型 (对应HTTP Content-Type)</h3>
+
+<p>常用示例：</p>
+
+<pre><code>// 一个方法处理多个Content-Type请求
+@RequestMapping(value = &quot;consumesJsonOrXmlSpitter&quot;,
+            consumes = {&quot;application/json&quot;, &quot;application/xml&quot;},
+            method = RequestMethod.POST)
+public Spitter consumesJsonOrXmlSpitter(@RequestBody Spitter spitter) {
+    return spitter;
+}
+
+or
+
+// 分成多个方法，分别处理部分Content-Type请求, 但是不能有重叠（交集）
+@RequestMapping(value = &quot;consumesJsonSpitter&quot;, consumes = {&quot;application/json&quot;})
+public Spitter consumesJsonSpitter(@RequestBody Spitter spitter) {
+    return spitter;
+}
+
+@RequestMapping(value = &quot;consumesXmlSpitter&quot;, consumes = {&quot;application/xml&quot;})
+public Spitter consumesXmlSpitter(@RequestBody Spitter spitter) {
+    return spitter;
+}
+</code></pre>
+
+<p>这个例子可以通过设置请求的 Accept 和 Content-Type 将一种类型转化成另一种类型</p>
+
+<ol>
+<li>默认情况下接口只接受也只能解析 text类型的请求参数，类似于<code>a=x&amp;b=y&amp;...</code>；</li>
+<li>使用 consumes 可以设置接口只接受一个或多个类型的Content-Type，并且要使用@RequestBody注解某个参数，使得请求参数被反系列化到指定参数中；</li>
+<li>要注意，<strong>实际请求有多余的参数，即有些参数在接受参数的类中找不到对应的属性，会抛出异常400 - Bad Request 错误</strong>， 而如果不用consumes + @RequestBody组合，<strong>而用默认的参数绑定，会忽略掉多余的参数，不会抛出异常，程序会处理请求</strong>；</li>
+<li>跟 method 一样，相同的@RequestMapping value 可以由一个方法处理所有类型的Content-Type,也可以拆分成多个方法分别处理部分的Content-Type, 但是拆分的方法Content-Type集合不能有交集。</li>
+</ol>
+
+<h2 id="toc_6">用 @ExceptionHandler + @ResponseStatus 统一异常处理</h2>
+
+<p><strong>首先定义异常信息类</strong></p>
+
+<pre><code class="language-JAVA">public class ErrorInfo {
+
+    private int code;
+    private String message;
+
+    public ErrorInfo(int code, String message){
+        this.code = code;
+        this.message = message;
+    }
+
+    public int getCode() {
+        return code;
+    }
+
+    public void setCode(int code) {
+        this.code = code;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+}
+</code></pre>
+
+<p><strong>自定义异常类</strong></p>
+
+<pre><code class="language-JAVA">public class SpittleNotFoundException extends RuntimeException {
+    private long spittleId;
+
+    public SpittleNotFoundException(long spittleId) {
+        this.spittleId = spittleId;
+    }
+
+    public long getSpittleId() {
+        return spittleId;
+    }
+}
+</code></pre>
+
+<p><strong>在控制类中使用统一异常处理</strong></p>
+
+<pre><code class="language-JAVA">    // 为本控制类添加异常处理方法
+    @ExceptionHandler(SpittleNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)  // 设置返回码，默认是200
+    @ResponseBody // 如果要返回视图，则不要增加这行注解
+    public ErrorInfo spittleNotFound(SpittleNotFoundException e) {
+        long spittleid = e.getSpittleId();
+        return new ErrorInfo(4, &quot;Spitter [&quot; + spittleid + &quot;] not found!&quot;);
+    }
+
+    @RequestMapping(&quot;mode2/{id}&quot;)
+    @ResponseBody
+    public Spittle findById2(@PathVariable(&quot;id&quot;) long id) {
+        if (id &gt; 1) {
+            throw new SpittleNotFoundException(id); // 抛出异常,由异常处理方法处理
+        }
+        return spitterService.getSpittle(id);
+    }
+</code></pre>
+
+<h2 id="toc_7">使用 ResponseEntity 处理异常、设置返回码和设置返回headers</h2>
+
+<ol>
+<li>ResponseEntity可以在返回对象时设置返回码；</li>
+<li>使用ResponseEntity 默认是返回数据而不是试图，可以省去 @ResponseBody 注解，加了注解也没问题；</li>
+<li>该方法相对 @ExceptionHandler + @ResponseStatus 的方法没有优势，反而在方法的返回类型中增加了ResponseEntity&lt;?或类名&gt;，一般不使用这种方法处理异常； </li>
+<li>在新增资源时，为了更好的跟客户端交流，返回码可设置为HttpStatus.CREATED(201)，这个可以通过 @ResponseStatus 注解做到，但是如果要设置返回 headers，需要用 ResponseEntity才能做到，这才是 ResponseEntity 不可替代的地方。</li>
+</ol>
+
+<p><strong>处理异常示例</strong></p>
+
+<pre><code class="language-JAVA">    // 为本控制类添加异常处理方法
+    @ExceptionHandler(SpittleNotFoundException.class)
+    public ResponseEntity&lt;ErrorInfo&gt; spittleNotFound(SpittleNotFoundException e) {
+        long spittleid = e.getSpittleId();
+        ErrorInfo error = new ErrorInfo(4, &quot;Spitter [&quot; + spittleid + &quot;] not found!&quot;);
+        return new ResponseEntity&lt;ErrorInfo&gt;(error, HttpStatus.NOT_FOUND);
+    }
+
+
+    @RequestMapping(&quot;mode2/{id}&quot;)
+    public ResponseEntity&lt;?&gt; findById2(@PathVariable(&quot;id&quot;) long id) {
+        if (id &gt; 1) {
+            throw new SpittleNotFoundException(id); // 抛出异常,由异常处理方法
+        }
+        return new ResponseEntity&lt;Spittle&gt;(spitterService.getSpittle(id), HttpStatus.OK);
+    }
+</code></pre>
+
+<p><strong>设置返回的headers</strong><br/>
+在新增资源时，为了更好的跟客户端交流，返回码可设置为HttpStatus.CREATED(201)，这个可以通过 @ResponseStatus 注解做到，但是如果要设置返回 headers，需要用 ResponseEntity才能做到</p>
+
+<pre><code class="language-JAVA">    @RequestMapping(value = &quot;save&quot;, consumes = &quot;application/json&quot;)
+    public ResponseEntity&lt;Spittle&gt; save(@RequestBody Spittle spittle, UriComponentsBuilder ucb) {
+        spittle = spitterService.saveSpittle(spittle);
+        HttpHeaders headers = new HttpHeaders();
+        URI locationUri =
+                ucb.path(&quot;/spittles/&quot;)
+                .path(String.valueOf(spittle.getId()))
+                .build()
+                .toUri();
+        headers.setLocation(locationUri);
+
+        return new ResponseEntity&lt;Spittle&gt;(spittle,headers, HttpStatus.CREATED);
+    }
+</code></pre>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Spring使用远程服务(2) —— 使用Hessian/Burlap/HttpInvoker]]></title>
+    <link href="tianhaox.com/14748080531208.html"/>
+    <updated>2016-09-25T20:54:13+08:00</updated>
+    <id>tianhaox.com/14748080531208.html</id>
+    <content type="html"><![CDATA[
+<p><em>——《Spring实战》笔记 第15章</em></p>
+
+<p>这3者都是基于HTTP服务的RPC，其中Hessian和Burlap都是由caucho提供的，HttpInvoker是Spring提供的，他们各自的特点：<br/>
+1. Hessian，使用二进制消息进行客户端和服务端交互，可以一直到非Java的语言中，可读性差，节省宽带，使用私有序列化机制，复杂对象不一定行。<br/>
+2. Burlap是基于XML的远程条用技术，可以移植到能够解析XML的语言上，可读性强，耗宽带，使用私有序列化机制，复杂对象不一定行。<br/>
+3. HttpInvoker，由Spring提供的，使用JAVA对象序列化机制，客户端和服务端都必须是Spring。</p>
+
+<p>Spring下的 Hessian、Burlap、HttpInvoker的使用方式跟RMI差不多，最红要的使用区别是RMI不是MVC，不需要要配置MVC，而其他3个是基于MVC的，要将服务配置进MVC中。</p>
+
+<p>下面可以看到 Hessian、Burlap、HttpInvoker的使用方法除了类名不同意外，几乎完全一致。</p>
+
+<h2 id="toc_0">前提</h2>
+
+<ol>
+<li>Hessian、Burlap、HttpInvoker是基于HTTP的远程调用服务， 所以要放在SpringMVC下面；</li>
+<li>开放的接口返回的对象要能序列化。</li>
+</ol>
+
+<p>坑：经测试，前2种方式的服务都不是很稳定，没有改过任何代码，有时候从客户端能获取到数据，有时候不行，然后重新编译几次又能获取到数据，服务端的代码没什么逻辑直接返回一个对象。</p>
+
+<h2 id="toc_1">1.启用Hessian/Burlap/HttpInvoker服务</h2>
+
+<p>SpringMVC 的HTTP服务有多种配置方式， 通过web.xml + SpringMvc.xml配置 或者 Java代码配置。这里使用Java代码配置。</p>
+
+<p>跟其他的MVC配置类似， 增加了部分配置， 主要是为了让MVC框架能够识别 *.service 的url请求并指派给指定类处理。</p>
+
+<p><strong>DataConfig类</strong><br/>
+略</p>
+
+<p><strong>RootConfig类</strong><br/>
+略</p>
+
+<p><strong>AbstractAnnotationConfigDispatcherServletInitializer类</strong><br/>
+注意最后一个方法<code>getServletMappings</code>增加了<code>*.service</code></p>
+
+<pre><code class="language-JAVA">package spittr.config;
+
+import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
+
+import spittr.web.WebConfig;
+
+public class SpitterWebInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
+  
+  @Override
+  protected Class&lt;?&gt;[] getRootConfigClasses() {
+    return new Class&lt;?&gt;[] { RootConfig.class };
+  }
+
+  @Override
+  protected Class&lt;?&gt;[] getServletConfigClasses() {
+    return new Class&lt;?&gt;[] { WebConfig.class };
+  }
+
+  @Override
+  protected String[] getServletMappings() {
+    return new String[] { &quot;/&quot;, &quot;*.service&quot; };
+  }
+
+}
+</code></pre>
+
+<p><strong>WebMvcConfigurerAdapter类</strong></p>
+
+<p>这里新增了4个Beans: <strong>HessianServiceExporter</strong> 、<strong>BurlapServiceExporter</strong> 、<strong>HttpInvokerServiceExporter</strong> 和 <strong>HandlerMapping</strong>, 前3个Bean分别开启Hessian、Burlap和HttpInvoker服务，都是将SpitterService封装成HTTP服务发布出去，发布的地址与MVC容器的地址一致，最后HandlerMapping将这3个封装好的绑定到相应的URL地址，提供给外部访问。<br/>
+特别注意HandlerMapping 中设置了<code>mapping.setOrder(0);</code>， 这是因为一般的MVC项目都会在 <code>configureDefaultServletHandling</code>方法中设置<code>configurer.enable();</code>，它的效果是除了Controller中指定的URL路径，其它URL都作为静态资源的URL， 而我们新增的HandlerMappingURL优先级低于静态资源，最终变成404错误， 所以要把新增的HandlerMapping优先级提高到比静态资源高，这里强制设成0，其实应该有更优化的值。</p>
+
+<pre><code class="language-JAVA">package spittr.web;
+
+import ...此处略过一堆package
+
+@Configuration
+@EnableWebMvc
+@ComponentScan(&quot;spittr.web&quot;)
+public class WebConfig extends WebMvcConfigurerAdapter {
+
+    ...此处略过一堆其它MVC配置。
+    
+   @Bean
+    public SpitterService spitterService(){
+        return new SpitterServiceImpl();
+    }
+
+    @Bean
+    public HessianServiceExporter hessianExportedSpitterService(SpitterService spitterService){
+        HessianServiceExporter exporter = new HessianServiceExporter();
+        exporter.setService(spitterService);
+        exporter.setServiceInterface(SpitterService.class);
+        return exporter;
+    }
+
+    @Bean
+    public BurlapServiceExporter burlapExportedSpitterService(SpitterService spitterService){
+        BurlapServiceExporter exporter = new BurlapServiceExporter();
+        exporter.setService(spitterService);
+        exporter.setServiceInterface(SpitterService.class);
+        return exporter;
+    }
+
+     @Bean
+    public HttpInvokerServiceExporter httpExportedSpitterService(SpitterService spitterService){
+        HttpInvokerServiceExporter exporter = new HttpInvokerServiceExporter();
+        exporter.setService(spitterService);
+        exporter.setServiceInterface(SpitterService.class);
+        return exporter;
+    }
+
+    @Bean
+    public HandlerMapping hessianMapping() {
+        SimpleUrlHandlerMapping mapping = new SimpleUrlHandlerMapping();
+        Properties mappings = new Properties();
+        mappings.setProperty(&quot;/hessian/spitter.service&quot;, &quot;hessianExportedSpitterService&quot;);
+        mappings.setProperty(&quot;/burlap/spitter.service&quot;, &quot;burlapExportedSpitterService&quot;);
+        mappings.setProperty(&quot;/httpinvoker/spitter.service&quot;, &quot;httpExportedSpitterService&quot;);
+        mapping.setMappings(mappings);
+        mapping.setOrder(0);
+        return mapping;
+    }
+
+    @Override
+    public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
+        configurer.enable();
+    }
+
+}
+
+</code></pre>
+
+<h2 id="toc_2">2.客户端代码</h2>
+
+<h3 id="toc_3">Hessian客户端</h3>
+
+<p><strong>配置类</strong></p>
+
+<pre><code class="language-JAVA">package spittr.client;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.remoting.caucho.HessianProxyFactoryBean;
+import spittr.service.SpitterService;
+
+/**
+ * Created by tianhao on 16/9/25.
+ */
+@Configuration
+public class HessianClientConfig {
+
+    @Bean
+    public HessianProxyFactoryBean spitterService(){
+        HessianProxyFactoryBean proxy = new HessianProxyFactoryBean();
+        proxy.setServiceUrl(&quot;http://localhost:8080/hessian/spitter.service&quot;);
+        proxy.setServiceInterface(SpitterService.class);
+        return proxy;
+    }
+
+}
+</code></pre>
+
+<p><strong>测试Hessian服务</strong><br/>
+注意：这里的ctx.getBean(&quot;spitterService&quot;)中的<code>spitterService</code>对应的是HessianClientConfig类的<code>spitterService()</code>方法的名称，如果两边名称不一致会获取不到Bean。</p>
+
+<pre><code class="language-JAVA">package spittr.client;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import spittr.model.Spitter;
+import spittr.service.SpitterService;
+
+/**
+ * Created by tianhao on 16/9/25.
+ */
+public class HessionClientMain {
+
+    public static void main(String[] args) {
+        ApplicationContext ctx = new AnnotationConfigApplicationContext(HessianClientConfig.class);
+        SpitterService service = (SpitterService) ctx.getBean(&quot;spitterService&quot;);
+        Spitter spitter = service.getSpitter(0);
+        if (spitter != null) {
+            System.out.println(&quot;返回结果:&quot; + spitter.toString());
+        } else {
+            System.out.println(&quot;没有获取到数据.&quot;);
+        }
+    }
+}
+</code></pre>
+
+<h3 id="toc_4">Burlap客户端</h3>
+
+<p><strong>配置类</strong></p>
+
+<pre><code class="language-JAVA">package spittr.client;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.remoting.caucho.BurlapProxyFactoryBean;
+import spittr.service.SpitterService;
+
+/**
+ * Created by tianhao on 16/9/25.
+ */
+@Configuration
+public class BurlapClientConfig {
+
+    @Bean
+    public BurlapProxyFactoryBean spitterService(){
+        BurlapProxyFactoryBean proxy = new BurlapProxyFactoryBean();
+        proxy.setServiceUrl(&quot;http://localhost:8080/burlap/spitter.service&quot;);
+        proxy.setServiceInterface(SpitterService.class);
+        return proxy;
+    }
+
+}
+</code></pre>
+
+<p><strong>测试Burlap服务</strong><br/>
+注意：这里的ctx.getBean(&quot;spitterService&quot;)中的<code>spitterService</code>对应的是BurlapClientConfig类的<code>spitterService()</code>方法的名称，如果两边名称不一致会获取不到Bean。</p>
+
+<pre><code class="language-JAVA">package spittr.client;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import spittr.model.Spitter;
+import spittr.service.SpitterService;
+
+/**
+ * Created by tianhao on 16/9/25.
+ */
+public class BurlapClientMain {
+
+    public static void main(String[] args) {
+        ApplicationContext ctx = new AnnotationConfigApplicationContext(BurlapClientConfig.class);
+        SpitterService service = (SpitterService) ctx.getBean(&quot;spitterService&quot;);
+
+        Spitter spitter = service.getSpitter(0);
+        if (spitter != null) {
+            System.out.println(&quot;返回结果:&quot; + spitter.toString());
+        } else {
+            System.out.println(&quot;没有获取到数据.&quot;);
+        }
+    }
+}
+
+</code></pre>
+
+<h3 id="toc_5">HttpInvoker客户端</h3>
+
+<p><strong>配置类</strong></p>
+
+<pre><code class="language-JAVA">package spittr.client;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.remoting.caucho.BurlapProxyFactoryBean;
+import spittr.service.SpitterService;
+
+/**
+ * Created by tianhao on 16/9/25.
+ */
+@Configuration
+public class HttpInvokerClientConfig {
+
+    @Bean
+    public BurlapProxyFactoryBean spitterService(){
+        BurlapProxyFactoryBean proxy = new BurlapProxyFactoryBean();
+        proxy.setServiceUrl(&quot;http://localhost:8080/httpinvoker/spitter.service&quot;);
+        proxy.setServiceInterface(SpitterService.class);
+        return proxy;
+    }
+
+}
+</code></pre>
+
+<p><strong>测试HttpInvoker服务</strong></p>
+
+<pre><code class="language-JAVA">package spittr.client;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import spittr.model.Spitter;
+import spittr.service.SpitterService;
+
+/**
+ * Created by tianhao on 16/9/25.
+ */
+public class HttpInvokerClientMain {
+
+    public static void main(String[] args) {
+        ApplicationContext ctx = new AnnotationConfigApplicationContext(BurlapClientConfig.class);
+        SpitterService service = (SpitterService) ctx.getBean(&quot;spitterService&quot;);
+
+        Spitter spitter = service.getSpitter(0);
+        if (spitter != null) {
+            System.out.println(&quot;返回结果:&quot; + spitter.toString());
+        } else {
+            System.out.println(&quot;没有获取到数据.&quot;);
+        }
+    }
+}
+</code></pre>
+
+<h2 id="toc_6">3.踩坑总结：</h2>
+
+<ol>
+<li>服务端的HandlerMapping需要设置顺序；</li>
+<li>客户端Bean名称要与配置类的方法名称一致；</li>
+<li>测试不通过时先把缓存清理干净（包括编译的文件）再测试</li>
+<li>依赖包只要：<code>compile group: &#39;com.caucho&#39;, name: &#39;hessian&#39;, version: &#39;4.0.38&#39;</code>, 包含Hessian和Burlap，不要再导入burlap的包，否则冲突</li>
+</ol>
+
+<h2 id="toc_7">4.附上gradle配置</h2>
+
+<p><strong>build.gradle</strong></p>
+
+<pre><code class="language-Gradle">apply plugin: &#39;eclipse&#39;
+apply plugin: &#39;war&#39;
+apply plugin: &#39;eclipse-wtp&#39;
+
+dependencies {
+    compile &quot;org.springframework:spring-webmvc:4.0.7.RELEASE&quot;
+    compile &quot;org.springframework:spring-jdbc:4.0.7.RELEASE&quot;
+    compile &quot;com.h2database:h2:1.4.182&quot;
+    compile &quot;org.hibernate:hibernate-validator:5.0.1.Final&quot;
+    compile &quot;org.apache.commons:commons-lang3:3.1&quot;
+    compile &quot;org.thymeleaf:thymeleaf-spring4:2.1.3.RELEASE&quot;
+
+    providedCompile &quot;javax.servlet:javax.servlet-api:3.1.0&quot;
+
+    testCompile &quot;junit:junit-dep:4.11&quot;
+    testCompile &quot;org.springframework:spring-test:4.0.7.RELEASE&quot;
+    testCompile &quot;org.mockito:mockito-core:1.9.5&quot;
+    testCompile &quot;org.hamcrest:hamcrest-library:1.3&quot;
+
+    compile group: &#39;com.caucho&#39;, name: &#39;hessian&#39;, version: &#39;4.0.38&#39;
+//    compile group: &#39;com.caucho&#39;, name: &#39;burlap&#39;, version: &#39;2.1.12&#39;
+
+}
+
+repositories {
+    maven { url &#39;http://maven.springframework.org/release&#39; }
+    maven { url &#39;http://maven.springframework.org/milestone&#39; }
+    maven { url &#39;http://maven.springframework.org/snapshot&#39; }
+    maven { url &#39;http://download.java.net/maven/2&#39; }
+    mavenCentral()
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = &#39;1.8&#39;
+}
+
+war {
+    baseName = &#39;spittr&#39;
+}
+
+eclipse {
+    wtp {
+        component {
+            contextPath = &#39;spittr&#39;
+        }
+    }
+}
+</code></pre>
+
+<p><strong>settings.gradle</strong></p>
+
+<pre><code>rootProject.name = &#39;HessianBurlap&#39;
+</code></pre>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Spring使用远程服务(1) —— 使用RMI]]></title>
+    <link href="tianhaox.com/14747977219341.html"/>
+    <updated>2016-09-25T18:02:01+08:00</updated>
+    <id>tianhaox.com/14747977219341.html</id>
+    <content type="html"><![CDATA[
+<p><em>——《Spring实战》笔记 第15章</em></p>
+
+<p>RMI可以将本地接口封装成可远程调用的服务，客户端可以像调用本地接口一样调用封装后的服务。</p>
+
+<h2 id="toc_0">前提条件</h2>
+
+<ol>
+<li>客户端和服务端都必须是Java；</li>
+<li>RMI封装的接口返回的对象必须可序列化，否则抛异常，例如：<code>public class Spitter implements Serializable {...}</code> ；</li>
+<li>由于需要序列化，所以客户端和服务端要保证版本完全一致；</li>
+</ol>
+
+<h2 id="toc_1">1. 解决发布RMI服务时不能指定registryHost的坑（多网卡不能指定网卡，比如内网网卡）</h2>
+
+<p>参见： <a href="http://stackoverflow.com/questions/10094416/rmiserviceexporter-not-working-does-not-connect-to-rmi-localhost-at-port-1099">http://stackoverflow.com/questions/10094416/rmiserviceexporter-not-working-does-not-connect-to-rmi-localhost-at-port-1099</a></p>
+
+<pre><code class="language-Java">import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.RMIClientSocketFactory;
+import java.rmi.server.RMIServerSocketFactory;
+
+public class MyRmiServiceExporter extends RmiServiceExporter {
+
+    protected Registry getRegistry(String registryHost, int registryPort,
+                                   RMIClientSocketFactory clientSocketFactory, RMIServerSocketFactory serverSocketFactory)
+            throws RemoteException
+    {
+
+        if (registryHost != null) {
+            // Host explictly specified: only lookup possible.
+            if (logger.isInfoEnabled()) {
+                logger.info(&quot;Looking for RMI registry at port &#39;&quot; + registryPort + &quot;&#39; of host [&quot; + registryHost + &quot;]&quot;);
+            }
+            try {
+                Registry reg = LocateRegistry.getRegistry(registryHost, registryPort, clientSocketFactory);
+                testRegistry(reg);
+                return reg;
+            } catch (RemoteException ex) {
+                logger.debug(&quot;RMI registry access threw exception&quot;, ex);
+                logger.warn(&quot;Could not detect RMI registry - creating new one&quot;);
+                // Assume no registry found -&gt; create new one.
+                LocateRegistry.createRegistry(registryPort);
+                Registry reg = LocateRegistry.getRegistry(registryHost, registryPort, clientSocketFactory);
+                testRegistry(reg);
+                return reg;
+            }
+        } else {
+            return getRegistry(registryPort, clientSocketFactory, serverSocketFactory);
+        }
+    }
+}
+</code></pre>
+
+<h2 id="toc_2">2.定义服务接口</h2>
+
+<pre><code class="language-Java">public interface SpitterService {
+    List&lt;Spittle&gt; getRecentSpittles(int count);
+    void saveSpittle(Spittle spittle);
+    void saveSpitter(Spitter spitter);
+    Spitter getSpitter(long id);
+    void startFollowing(Spitter follower, Spitter followee);
+    List&lt;Spittle&gt; getSpittlesForSpitter(Spitter spitter);
+    List&lt;Spittle&gt; getSpittlesForSpitter(String username);
+    Spitter getSpitter(String username);
+    Spittle getSpittleById(long id);
+    void deleteSpittle(long id);
+    List&lt;Spitter&gt; getAllSpitters();
+}
+</code></pre>
+
+<h2 id="toc_3">3.发布服务 （XML方式）</h2>
+
+<p><strong>XML配置：</strong></p>
+
+<pre><code class="language-XML">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+       xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+       xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.0.xsd&quot;&gt;
+
+    &lt;!-- 注入要发布的RMI服务类 --&gt;
+    &lt;bean id=&quot;spitterService&quot; class=&quot;service.SpitterServiceImpl&quot;&gt;&lt;/bean&gt;
+
+    &lt;bean class=&quot;config.MyRmiServiceExporter&quot;&gt;
+        &lt;!-- RMI服务名称,可自定义服务名称 --&gt;
+        &lt;property name=&quot;serviceName&quot; value=&quot;SpitterService&quot; /&gt;
+        &lt;!-- 导出实体 --&gt;
+        &lt;property name=&quot;service&quot; ref=&quot;spitterService&quot; /&gt;
+        &lt;!-- 导出接口 --&gt;
+        &lt;property name=&quot;serviceInterface&quot; value=&quot;service.SpitterService&quot; /&gt;
+        &lt;!-- 只有使用MyRmiServiceExporter类是才有用, 使用默认类无效 --&gt;
+        &lt;property name=&quot;registryHost&quot; value=&quot;localhost&quot;/&gt;
+        &lt;!-- spring默认使用1099端口 --&gt;
+        &lt;property name=&quot;registryPort&quot; value=&quot;1199&quot; /&gt;
+
+        &lt;property name=&quot;alwaysCreateRegistry&quot; value=&quot;true&quot;/&gt;
+    &lt;/bean&gt;
+&lt;/beans&gt;
+</code></pre>
+
+<p><strong>启动RMI服务:</strong></p>
+
+<pre><code class="language-JAVA">import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+/**
+ * Created by tianhao on 16/9/25.
+ */
+public class ServerMainWithXml {
+    public static void main(String[] args) {
+        ApplicationContext ctx = new ClassPathXmlApplicationContext(&quot;server.xml&quot;);
+        System.out.println(&quot;已成功发布RMI服务类&quot;);
+    }
+}
+</code></pre>
+
+<h2 id="toc_4">4.客户端调用RMI服务  (XML方式)</h2>
+
+<p><strong>XML配置：</strong></p>
+
+<pre><code class="language-XML">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+       xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+       xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.0.xsd&quot;&gt;
+
+    &lt;bean id=&quot;spitterService&quot; class=&quot;org.springframework.remoting.rmi.RmiProxyFactoryBean&quot;&gt;
+        &lt;property name=&quot;serviceUrl&quot; value=&quot;rmi://localhost:1199/SpitterService&quot; /&gt;
+        &lt;property name=&quot;serviceInterface&quot; value=&quot;service.SpitterService&quot; /&gt;
+    &lt;/bean&gt;
+&lt;/beans&gt;
+</code></pre>
+
+<p><strong>启动客户端：</strong></p>
+
+<pre><code class="language-JAVA">
+import model.Spitter;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import service.SpitterService;
+
+/**
+ * Created by tianhao on 16/9/25.
+ */
+public class ClientMainWithXml {
+
+    public static void main(String[] args) {
+        ApplicationContext ctx = new ClassPathXmlApplicationContext(&quot;client.xml&quot;);
+        System.out.println(&quot;加载Spring容器,并初始化RMI客户端&quot;);
+        SpitterService spitterService = (SpitterService) ctx.getBean(&quot;spitterService&quot;);
+        Spitter spitter = spitterService.getSpitter(1);
+        System.out.println(&quot;返回结果:&quot; + spitter.toString());
+    }
+}
+</code></pre>
+
+<h2 id="toc_5">5. 发布服务 （JavaConfig方式）</h2>
+
+<p><strong>配置类：</strong></p>
+
+<pre><code class="language-JAVA">package config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import service.SpitterService;
+import service.SpitterServiceImpl;
+
+/**
+ * Created by tianhao on 16/9/25.
+ */
+@Configuration
+public class RMIServerConfig {
+
+    @Bean
+    public SpitterService spitterService(){
+        return new SpitterServiceImpl();
+    }
+
+    @Bean
+    public MyRmiServiceExporter rmiExporter(SpitterService spitterService){
+        MyRmiServiceExporter rmiExporter = new MyRmiServiceExporter();
+        rmiExporter.setService(spitterService);
+        rmiExporter.setServiceName(&quot;SpitterService&quot;);
+        rmiExporter.setRegistryHost(&quot;127.0.0.1&quot;);
+        rmiExporter.setRegistryPort(1199);
+        rmiExporter.setServiceInterface(SpitterService.class);
+        return rmiExporter;
+    }
+
+}
+</code></pre>
+
+<p><strong>启动RMI服务：</strong></p>
+
+<pre><code class="language-JAVA">import config.RMIServerConfig;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
+/**
+ * Created by tianhao on 16/9/25.
+ */
+public class ServerMainWithJavaConfig {
+
+    public static void main(String[] args) {
+        ApplicationContext ctx =
+                new AnnotationConfigApplicationContext(RMIServerConfig.class);
+        System.out.println(&quot;已成功发布RMI服务类&quot;);
+    }
+}
+</code></pre>
+
+<h2 id="toc_6">6.客户端调用RMI服务  (JavaConfig方式)</h2>
+
+<p><strong>配置类：</strong></p>
+
+<pre><code class="language-JAVA">package config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.remoting.rmi.RmiProxyFactoryBean;
+import service.SpitterService;
+
+/**
+ * Created by tianhao on 16/9/25.
+ */
+public class RMIClientConfig {
+
+    @Bean
+    public RmiProxyFactoryBean spitterService() {
+        RmiProxyFactoryBean rmiProxy = new RmiProxyFactoryBean();
+        rmiProxy.setServiceUrl(&quot;rmi://localhost:1199/SpitterService&quot;);
+        rmiProxy.setServiceInterface(SpitterService.class);
+        return rmiProxy;
+    }
+}
+</code></pre>
+
+<p><strong>调用RMI服务：</strong></p>
+
+<pre><code class="language-JAVA">import config.RMIClientConfig;
+import model.Spitter;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import service.SpitterService;
+
+/**
+ * Created by tianhao on 16/9/25.
+ */
+public class ClientMainWithJavaConfig {
+
+    public static void main(String[] args) {
+        ApplicationContext ctx = new AnnotationConfigApplicationContext(RMIClientConfig.class);
+        System.out.println(&quot;加载Spring容器,并初始化RMI客户端&quot;);
+        SpitterService spitterService = (SpitterService) ctx.getBean(&quot;spitterService&quot;);
+        Spitter spitter = spitterService.getSpitter(1);
+        System.out.println(&quot;返回结果:&quot; + spitter.toString());
+    }
+}
+</code></pre>
+
+<h2 id="toc_7">7.踩坑总结</h2>
+
+<ol>
+<li>如果要指定网卡，即设置registryHost参数，需使用1中的解决办法，否则异常；</li>
+<li>接口返回的对象要实现 Serializable，虽然仅仅是<code>implements Serializable</code>一下。</li>
+</ol>
+
+<h2 id="toc_8">8.附上项目Gradle配置</h2>
+
+<p><strong>build.gradle</strong></p>
+
+<pre><code class="language-Gradle">apply plugin: &#39;eclipse&#39;
+apply plugin: &#39;war&#39;
+apply plugin: &#39;eclipse-wtp&#39;
+
+dependencies {
+    compile &quot;org.springframework:spring-webmvc:4.3.1.RELEASE&quot;
+    compile &quot;org.springframework:spring-jdbc:4.3.1.RELEASE&quot;
+    compile &quot;org.apache.commons:commons-lang3:3.1&quot;
+
+    testCompile &quot;junit:junit-dep:4.11&quot;
+    testCompile &quot;org.springframework:spring-test:4.3.1.RELEASE&quot;
+    testCompile &quot;org.mockito:mockito-core:1.9.5&quot;
+    testCompile &quot;org.hamcrest:hamcrest-library:1.3&quot;
+}
+
+repositories {
+    maven { url &#39;http://maven.springframework.org/release&#39; }
+    maven { url &#39;http://maven.springframework.org/milestone&#39; }
+    maven { url &#39;http://maven.springframework.org/snapshot&#39; }
+    maven { url &#39;http://download.java.net/maven/2&#39; }
+    mavenCentral()
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = &#39;1.8&#39;
+}
+
+war {
+    baseName = &#39;service&#39;
+}
+
+eclipse {
+    wtp {
+        component {
+            contextPath = &#39;service&#39;
+        }
+    }
+}
+</code></pre>
+
+<p><strong>settings.gradle</strong></p>
+
+<pre><code>rootProject.name = &#39;RMI&#39;
+</code></pre>
+
+]]></content>
+  </entry>
+  
+</feed>
